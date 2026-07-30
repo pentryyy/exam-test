@@ -264,7 +264,6 @@ func Run() error {
 		return fmt.Errorf("ошибка чтения вопросов из файла %q: %w", finalFile, err)
 	}
 
-	// 5. Запуск интерактивного теста
 	return runInteractive(test.Test{
 		Questions: pool,
 		Count:     finalCount,

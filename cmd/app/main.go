@@ -2,16 +2,12 @@ package main
 
 import (
 	"exam-test/internal/cli"
-	"fmt"
 	"os"
 )
 
 func main() {
 	if err := cli.Run(); err != nil {
-		_, err := fmt.Fprintf(os.Stderr, "Ошибка: %v\n", err)
-		if err != nil {
-			return
-		}
+		cli.LogError("Ошибка: переменная окружения TEST_PATH не задана")
 		os.Exit(1)
 	}
 }

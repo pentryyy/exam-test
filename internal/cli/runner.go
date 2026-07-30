@@ -1,0 +1,272 @@
+package cli
+
+import (
+	"bufio"
+	"exam-test/internal/matcher"
+	"exam-test/internal/model"
+	"exam-test/internal/parser"
+	"exam-test/internal/test"
+	"flag"
+	"fmt"
+	"math/rand"
+	"os"
+	"strconv"
+
+	"strings"
+	"time"
+)
+
+func isQuit(s string) bool {
+	switch strings.ToLower(s) {
+	case "!выход", "!quit", "!exit":
+		return true
+	}
+	return false
+}
+
+func askLine(r *bufio.Reader) (string, bool) {
+	line, err := r.ReadString('\n')
+	if err != nil && line == "" {
+		return "", true
+	}
+	line = strings.TrimRight(line, "\r\n")
+	if isQuit(strings.TrimSpace(line)) {
+		return "", true
+	}
+	return line, false
+}
+
+func isSkip(s string) bool {
+	switch strings.ToLower(s) {
+	case "!пропуск", "!skip", "":
+		return true
+	}
+	return false
+}
+
+func askChoice(r *bufio.Reader, max int) (int, bool) {
+	for {
+		fmt.Print("\nВаш ответ (1-", max, "): ")
+		line, stop := askLine(r)
+		if stop {
+			return 0, true
+		}
+		line = strings.TrimSpace(line)
+		if isSkip(line) {
+			return -1, false
+		}
+		num, err := strconv.Atoi(line)
+		if err != nil || num < 1 || num > max {
+			fmt.Printf("Введите число от 1 до %d.\n", max)
+			continue
+		}
+		return num - 1, false
+	}
+}
+
+func printHeader(pool, n int) {
+	fmt.Println(strings.Repeat("=", 64))
+	fmt.Println("ТЕСТ ЭКЗАМЕНА")
+	fmt.Println(strings.Repeat("=", 64))
+	fmt.Printf("Вопросов в базе: %d. В тесте: %d (выбраны случайно).\n", pool, n)
+	fmt.Println("Для вопросов с вариантами введите номер варианта.")
+	fmt.Println("Команды: !пропуск — пропустить вопрос, !выход — завершить тест досрочно.")
+}
+
+func progressBar(p float64) string {
+	const width = 40
+	filled := int(p / 100 * width)
+	if filled > width {
+		filled = width
+	}
+	if filled < 0 {
+		filled = 0
+	}
+	return "[" + strings.Repeat("#", filled) + strings.Repeat(".", width-filled) + "]"
+}
+
+func grade(p float64) string {
+	switch {
+	case p >= 92:
+		return "отлично"
+	case p >= 75:
+		return "хорошо"
+	case p >= 61:
+		return "удовлетворительно"
+	default:
+		return "неудовлетворительно"
+	}
+}
+
+func printReport(results []model.Result, planned int, aborted bool) {
+	fmt.Println()
+	fmt.Println(strings.Repeat("=", 64))
+	fmt.Println("  РЕЗУЛЬТАТЫ")
+	fmt.Println(strings.Repeat("=", 64))
+
+	if len(results) == 0 {
+		fmt.Println("Ни на один вопрос ответа не получено.")
+		return
+	}
+
+	right := 0
+	var wrong []model.Result
+	for _, r := range results {
+		if r.Correct {
+			right++
+		} else {
+			wrong = append(wrong, r)
+		}
+	}
+
+	// Процент считается от числа заданных вопросов.
+	total := len(results)
+	if aborted {
+		fmt.Printf("Тест прерван: отвечено %d из %d вопросов.\n", total, planned)
+	}
+	percent := float64(right) / float64(total) * 100
+
+	fmt.Printf("Правильных ответов: %d из %d\n", right, total)
+	fmt.Printf("Результат: %.1f%% — %s\n", percent, grade(percent))
+	fmt.Println(progressBar(percent))
+
+	if len(wrong) == 0 {
+		fmt.Println("\nОшибок нет. Отличная работа!")
+		return
+	}
+
+	fmt.Printf("\nНеверно отвеченные вопросы (%d):\n", len(wrong))
+	for i, r := range wrong {
+		fmt.Println(strings.Repeat("-", 64))
+		fmt.Printf("%d. %s\n", i+1, r.Q.Text)
+		fmt.Printf("   Ваш ответ:        %s\n", r.UserAnswer)
+		fmt.Printf("   Правильный ответ: %s\n", r.Q.CorrectAnswerString())
+	}
+	fmt.Println(strings.Repeat("-", 64))
+}
+
+func runInteractive(t test.Test) error {
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+	n := t.Count
+	if n > len(t.Questions) {
+		n = len(t.Questions)
+	}
+	if n < 1 {
+		return fmt.Errorf("количество вопросов должно быть больше нуля")
+	}
+
+	order := rng.Perm(len(t.Questions))
+	selected := make([]model.Question, 0, n)
+	for _, idx := range order[:n] {
+		selected = append(selected, t.Questions[idx])
+	}
+
+	reader := bufio.NewReader(os.Stdin)
+	printHeader(len(t.Questions), n)
+
+	results := make([]model.Result, 0, n)
+	aborted := false
+
+	for i, q := range selected {
+		fmt.Printf("\nВопрос %d из %d\n", i+1, n)
+		fmt.Println(strings.Repeat("-", 64))
+		fmt.Println(q.Text)
+
+		var (
+			userAnswer string
+			ok         bool
+			stop       bool
+		)
+
+		if q.IsChoice() {
+			perm := rng.Perm(len(q.Options))
+			shuffled := make([]string, len(q.Options))
+			correctPos := -1
+			for newPos, oldPos := range perm {
+				shuffled[newPos] = q.Options[oldPos]
+				if oldPos == q.CorrectIndex {
+					correctPos = newPos
+				}
+			}
+			fmt.Println()
+			for j, opt := range shuffled {
+				fmt.Printf("  %d) %s\n", j+1, opt)
+			}
+			choice, s := askChoice(reader, len(shuffled))
+			stop = s
+			if !stop && choice >= 0 {
+				userAnswer = shuffled[choice]
+				ok = choice == correctPos
+			}
+		} else {
+			fmt.Println("(введите ответ текстом)")
+			line, s := askLine(reader)
+			stop = s
+			if !stop {
+				userAnswer = strings.TrimSpace(line)
+				ok = matcher.MatchText(userAnswer, q)
+			}
+		}
+
+		if stop {
+			aborted = true
+			break
+		}
+
+		if userAnswer == "" {
+			userAnswer = "(нет ответа)"
+		}
+		if ok {
+			fmt.Println("  Верно")
+		} else {
+			fmt.Println("  Неверно")
+		}
+		results = append(results, model.Result{Q: q, UserAnswer: userAnswer, Correct: ok})
+	}
+
+	printReport(results, n, aborted)
+	return nil
+}
+
+func Run() error {
+	envFile := os.Getenv("TEST_PATH")
+	envCountStr := os.Getenv("TEST_COUNT")
+
+	if envFile == "" {
+		return fmt.Errorf("переменная окружения TEST_PATH не задана")
+	}
+
+	if envCountStr == "" {
+		return fmt.Errorf("переменная окружения TEST_COUNT не задана")
+	}
+
+	envCount, err := strconv.Atoi(envCountStr)
+	if err != nil {
+		return fmt.Errorf("некорректное значение TEST_COUNT=%q (ожидается число)", envCountStr)
+	}
+
+	file := flag.String("file", "", "путь к YAML-файлу с вопросами (приоритет над TEST_PATH)")
+	count := flag.Int("n", 0, "количество вопросов в тесте (приоритет над TEST_COUNT)")
+	flag.Parse()
+
+	finalFile := envFile
+	if *file != "" {
+		finalFile = *file
+	}
+
+	finalCount := envCount
+	if *count != 0 {
+		finalCount = *count
+	}
+
+	pool, err := parser.ParseQuestions(finalFile)
+	if err != nil {
+		return fmt.Errorf("ошибка чтения вопросов из файла %q: %w", finalFile, err)
+	}
+
+	// 5. Запуск интерактивного теста
+	return runInteractive(test.Test{
+		Questions: pool,
+		Count:     finalCount,
+	})
+}

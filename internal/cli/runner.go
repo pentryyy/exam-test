@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bufio"
+	"exam-test/internal/config"
 	"exam-test/internal/matcher"
 	"exam-test/internal/model"
 	"exam-test/internal/parser"
@@ -85,20 +86,7 @@ func progressBar(p float64) string {
 	return "[" + strings.Repeat("#", filled) + strings.Repeat(".", width-filled) + "]"
 }
 
-func grade(p float64) string {
-	switch {
-	case p >= 92:
-		return "отлично"
-	case p >= 75:
-		return "хорошо"
-	case p >= 61:
-		return "удовлетворительно"
-	default:
-		return "неудовлетворительно"
-	}
-}
-
-func printReport(results []model.Result, planned int, aborted bool) {
+func printReport(cfg *config.Config, results []model.Result, planned int, aborted bool) {
 	fmt.Println()
 	fmt.Println(strings.Repeat("=", 64))
 	fmt.Println("  РЕЗУЛЬТАТЫ")
@@ -127,7 +115,7 @@ func printReport(results []model.Result, planned int, aborted bool) {
 	percent := float64(right) / float64(total) * 100
 
 	fmt.Printf("Правильных ответов: %d из %d\n", right, total)
-	fmt.Printf("Результат: %.1f%% — %s\n", percent, grade(percent))
+	fmt.Printf("Результат: %.1f%% — %s\n", percent, cfg.Grade(percent))
 	fmt.Println(progressBar(percent))
 
 	if len(wrong) == 0 {
@@ -145,7 +133,7 @@ func printReport(results []model.Result, planned int, aborted bool) {
 	fmt.Println(strings.Repeat("-", 64))
 }
 
-func runInteractive(t test.Test) error {
+func runInteractive(cfg *config.Config, t test.Test) error {
 	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 	n := t.Count
 	if n > len(t.Questions) {
@@ -224,11 +212,11 @@ func runInteractive(t test.Test) error {
 		results = append(results, model.Result{Q: q, UserAnswer: userAnswer, Correct: ok})
 	}
 
-	printReport(results, n, aborted)
+	printReport(cfg, results, n, aborted)
 	return nil
 }
 
-func Run() error {
+func Run(cfg *config.Config) error {
 	envFile := os.Getenv("TEST_PATH")
 	envCountStr := os.Getenv("TEST_COUNT")
 
@@ -264,7 +252,7 @@ func Run() error {
 		return fmt.Errorf("ошибка чтения вопросов из файла %q: %w", finalFile, err)
 	}
 
-	return runInteractive(test.Test{
+	return runInteractive(cfg, test.Test{
 		Questions: pool,
 		Count:     finalCount,
 	})

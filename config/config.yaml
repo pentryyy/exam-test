@@ -1,0 +1,9 @@
+grades:
+  - threshold: 92
+    label: "отлично"
+  - threshold: 75
+    label: "хорошо"
+  - threshold: 61
+    label: "удовлетворительно"
+  - threshold: 0
+    label: "неудовлетворительно"

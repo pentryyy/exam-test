@@ -5,7 +5,6 @@ import (
 	"exam-test/internal/config"
 	"exam-test/internal/matcher"
 	"exam-test/internal/model"
-	"exam-test/internal/parser"
 	"exam-test/internal/test"
 	"flag"
 	"fmt"
@@ -247,7 +246,7 @@ func Run(cfg *config.Config) error {
 		finalCount = *count
 	}
 
-	pool, err := parser.ParseQuestions(finalFile)
+	pool, err := model.ParseQuestions(finalFile)
 	if err != nil {
 		return fmt.Errorf("ошибка чтения вопросов из файла %q: %w", finalFile, err)
 	}

@@ -5,7 +5,6 @@ import (
 	"exam-test/internal/config"
 	"exam-test/internal/matcher"
 	"exam-test/internal/model"
-	"exam-test/internal/test"
 	"flag"
 	"fmt"
 	"math/rand"
@@ -132,7 +131,7 @@ func printReport(cfg *config.Config, results []model.Result, planned int, aborte
 	fmt.Println(strings.Repeat("-", 64))
 }
 
-func runInteractive(cfg *config.Config, t test.Test) error {
+func runInteractive(cfg *config.Config, t model.Test) error {
 	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 	n := t.Count
 	if n > len(t.Questions) {
@@ -251,7 +250,7 @@ func Run(cfg *config.Config) error {
 		return fmt.Errorf("ошибка чтения вопросов из файла %q: %w", finalFile, err)
 	}
 
-	return runInteractive(cfg, test.Test{
+	return runInteractive(cfg, model.Test{
 		Questions: pool,
 		Count:     finalCount,
 	})

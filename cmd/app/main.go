@@ -9,12 +9,12 @@ import (
 func main() {
 	cfg, err := config.Load()
 	if err != nil {
-		cli.LogError("Ошибка загрузки конфига")
+		cli.LogError("Ошибка загрузки конфига", err)
 		os.Exit(1)
 	}
 
 	if err := cli.Run(cfg); err != nil {
-		cli.LogError("Ошибка запуска тестов")
+		cli.LogError("Ошибка запуска тестов", err)
 		os.Exit(1)
 	}
 }

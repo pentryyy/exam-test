@@ -58,6 +58,23 @@ func isSkip(s string) bool {
 	return false
 }
 
+func waitForStart(r *bufio.Reader) bool {
+	for {
+		line, err := r.ReadString('\n')
+		if err != nil {
+			return false
+		}
+		line = strings.TrimSpace(line)
+		if line == "" || line == "!старт" {
+			return true
+		}
+		if isQuit(line) {
+			return false
+		}
+		fmt.Println("Неизвестная команда. Введите !старт.")
+	}
+}
+
 func askChoice(r *bufio.Reader, max int) (int, bool) {
 	for {
 		fmt.Print("\nВаш ответ (1-", max, "): ")
@@ -84,7 +101,7 @@ func printHeader(pool, n int) {
 	fmt.Println(strings.Repeat("=", 64))
 	fmt.Printf("Вопросов в базе: %d. В тесте: %d (выбраны случайно).\n", pool, n)
 	fmt.Println("Для вопросов с вариантами введите номер варианта.")
-	fmt.Println("Команды: !пропуск — пропустить вопрос, !выход — завершить тест досрочно.")
+	fmt.Println("Команды: !пропуск — пропустить вопрос, !выход — завершить тест досрочно, !старт - для начала теста.")
 }
 
 func progressBar(p float64) string {
@@ -146,7 +163,7 @@ func printReport(cfg *config.Config, results []model.Result, planned int, aborte
 	fmt.Println(strings.Repeat("-", 64))
 }
 
-func runInteractive(cfg *config.Config, t model.Test) error {
+func runInteractive(cfg *config.Config, t model.Test, d time.Duration) error {
 	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 	n := t.Count
 	if n > len(t.Questions) {
@@ -164,6 +181,12 @@ func runInteractive(cfg *config.Config, t model.Test) error {
 
 	r := bufio.NewReader(os.Stdin)
 	printHeader(len(t.Questions), n)
+
+	if !waitForStart(r) {
+		return nil
+	}
+
+	clearScreen()
 
 	results := make([]model.Result, 0, n)
 	aborted := false
@@ -227,17 +250,29 @@ func runInteractive(cfg *config.Config, t model.Test) error {
 			fmt.Println("  Неверно")
 		}
 		results = append(results, model.Result{Q: q, UserAnswer: userAnswer, Correct: ok})
+
+		if i < n-1 {
+			time.Sleep(d)
+		}
 	}
 
 	printReport(cfg, results, n, aborted)
 
-	fmt.Println("\nНажмите Enter для выхода...")
+	fmt.Println("\nВведите !выход для выхода.")
 	line, err := r.ReadString('\n')
-	if err != nil && line == "" {
+	if err != nil && line == "!выход" {
 		return err
 	}
 
 	return nil
+}
+
+func getEnvRequired(name string) (string, error) {
+	value := os.Getenv(name)
+	if value == "" {
+		return "", fmt.Errorf("переменная окружения %s не задана", name)
+	}
+	return value, nil
 }
 
 func Run(cfg *config.Config) error {
@@ -245,20 +280,37 @@ func Run(cfg *config.Config) error {
 	// Загружаем .env (если он есть).
 	_ = godotenv.Load()
 
-	envFile := os.Getenv("TEST_PATH")
-	envCountStr := os.Getenv("TEST_COUNT")
-
-	if envFile == "" {
-		return fmt.Errorf("переменная окружения TEST_PATH не задана")
+	envFile, err := getEnvRequired("TEST_PATH")
+	if err != nil {
+		return err
 	}
 
-	if envCountStr == "" {
-		return fmt.Errorf("переменная окружения TEST_COUNT не задана")
+	envCountStr, err := getEnvRequired("TEST_COUNT")
+	if err != nil {
+		return err
+	}
+
+	envResultDelayStr, err := getEnvRequired("TEST_RESULT_DELAY")
+	if err != nil {
+		return err
 	}
 
 	envCount, err := strconv.Atoi(envCountStr)
 	if err != nil {
 		return fmt.Errorf("некорректное значение TEST_COUNT=%q (ожидается число)", envCountStr)
+	}
+
+	var delay time.Duration
+
+	d, err := time.ParseDuration(envResultDelayStr)
+	if err == nil && d >= 0 {
+		delay = d
+	} else {
+		if ms, err := strconv.Atoi(envResultDelayStr); err == nil && ms >= 0 {
+			delay = time.Duration(ms) * time.Millisecond
+		} else {
+			return fmt.Errorf("некорректное значение TEST_RESULT_DELAY=%q (ожидается число с единицей времени: ms, s, m или просто число миллисекунд)", envResultDelayStr)
+		}
 	}
 
 	file := flag.String("file", "", "путь к YAML-файлу с вопросами (приоритет над TEST_PATH)")
@@ -283,5 +335,5 @@ func Run(cfg *config.Config) error {
 	return runInteractive(cfg, model.Test{
 		Questions: pool,
 		Count:     finalCount,
-	})
+	}, delay)
 }

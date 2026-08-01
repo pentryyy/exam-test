@@ -300,17 +300,9 @@ func Run(cfg *config.Config) error {
 		return fmt.Errorf("некорректное значение TEST_COUNT=%q (ожидается число)", envCountStr)
 	}
 
-	var delay time.Duration
-
-	d, err := time.ParseDuration(envResultDelayStr)
-	if err == nil && d >= 0 {
-		delay = d
-	} else {
-		if ms, err := strconv.Atoi(envResultDelayStr); err == nil && ms >= 0 {
-			delay = time.Duration(ms) * time.Millisecond
-		} else {
-			return fmt.Errorf("некорректное значение TEST_RESULT_DELAY=%q (ожидается число с единицей времени: ms, s, m или просто число миллисекунд)", envResultDelayStr)
-		}
+	delay, err := time.ParseDuration(envResultDelayStr)
+	if err != nil || delay < 0 {
+		return fmt.Errorf("некорректное значение TEST_RESULT_DELAY=%q (ожидается положительное число с единицей времени: ms, s, m и т.д.)", envResultDelayStr)
 	}
 
 	file := flag.String("file", "", "путь к YAML-файлу с вопросами (приоритет над TEST_PATH)")

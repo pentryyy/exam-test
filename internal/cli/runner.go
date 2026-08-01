@@ -147,7 +147,7 @@ func runInteractive(cfg *config.Config, t model.Test) error {
 		selected = append(selected, t.Questions[idx])
 	}
 
-	reader := bufio.NewReader(os.Stdin)
+	r := bufio.NewReader(os.Stdin)
 	printHeader(len(t.Questions), n)
 
 	results := make([]model.Result, 0, n)
@@ -178,7 +178,7 @@ func runInteractive(cfg *config.Config, t model.Test) error {
 			for j, opt := range shuffled {
 				fmt.Printf("  %d) %s\n", j+1, opt)
 			}
-			choice, s := askChoice(reader, len(shuffled))
+			choice, s := askChoice(r, len(shuffled))
 			stop = s
 			if !stop && choice >= 0 {
 				userAnswer = shuffled[choice]
@@ -186,7 +186,7 @@ func runInteractive(cfg *config.Config, t model.Test) error {
 			}
 		} else {
 			fmt.Println("(введите ответ текстом)")
-			line, s := askLine(reader)
+			line, s := askLine(r)
 			stop = s
 			if !stop {
 				userAnswer = strings.TrimSpace(line)
@@ -211,6 +211,13 @@ func runInteractive(cfg *config.Config, t model.Test) error {
 	}
 
 	printReport(cfg, results, n, aborted)
+
+	fmt.Println("\nНажмите Enter для выхода...")
+	line, err := r.ReadString('\n')
+	if err != nil && line == "" {
+		return err
+	}
+
 	return nil
 }
 

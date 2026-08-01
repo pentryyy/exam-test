@@ -7,13 +7,28 @@ import (
 	"exam-test/internal/model"
 	"flag"
 	"fmt"
+	"github.com/joho/godotenv"
 	"math/rand"
 	"os"
+	"os/exec"
+	"runtime"
 	"strconv"
 
 	"strings"
 	"time"
 )
+
+func clearScreen() {
+	if runtime.GOOS == "windows" {
+		cmd := exec.Command("cmd", "/c", "cls")
+		cmd.Stdout = os.Stdout
+
+		// Игнорируем ошибку (если консоль не поддерживает).
+		_ = cmd.Run()
+	} else {
+		fmt.Print("\033[H\033[2J")
+	}
+}
 
 func isQuit(s string) bool {
 	switch strings.ToLower(s) {
@@ -154,6 +169,10 @@ func runInteractive(cfg *config.Config, t model.Test) error {
 	aborted := false
 
 	for i, q := range selected {
+		if i > 0 {
+			clearScreen()
+		}
+
 		fmt.Printf("\nВопрос %d из %d\n", i+1, n)
 		fmt.Println(strings.Repeat("-", 64))
 		fmt.Println(q.Text)
@@ -222,6 +241,10 @@ func runInteractive(cfg *config.Config, t model.Test) error {
 }
 
 func Run(cfg *config.Config) error {
+
+	// Загружаем .env (если он есть).
+	_ = godotenv.Load()
+
 	envFile := os.Getenv("TEST_PATH")
 	envCountStr := os.Getenv("TEST_COUNT")
 

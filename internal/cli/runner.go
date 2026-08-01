@@ -7,7 +7,6 @@ import (
 	"exam-test/internal/model"
 	"flag"
 	"fmt"
-	"github.com/joho/godotenv"
 	"math/rand"
 	"os"
 	"os/exec"
@@ -267,56 +266,24 @@ func runInteractive(cfg *config.Config, t model.Test, d time.Duration) error {
 	return nil
 }
 
-func getEnvRequired(name string) (string, error) {
-	value := os.Getenv(name)
-	if value == "" {
-		return "", fmt.Errorf("переменная окружения %s не задана", name)
-	}
-	return value, nil
-}
-
 func Run(cfg *config.Config) error {
-
-	// Загружаем .env (если он есть).
-	_ = godotenv.Load()
-
-	envFile, err := getEnvRequired("TEST_PATH")
-	if err != nil {
-		return err
-	}
-
-	envCountStr, err := getEnvRequired("TEST_COUNT")
-	if err != nil {
-		return err
-	}
-
-	envResultDelayStr, err := getEnvRequired("TEST_RESULT_DELAY")
-	if err != nil {
-		return err
-	}
-
-	envCount, err := strconv.Atoi(envCountStr)
-	if err != nil {
-		return fmt.Errorf("некорректное значение TEST_COUNT=%q (ожидается число)", envCountStr)
-	}
-
-	delay, err := time.ParseDuration(envResultDelayStr)
-	if err != nil || delay < 0 {
-		return fmt.Errorf("некорректное значение TEST_RESULT_DELAY=%q (ожидается положительное число с единицей времени: ms, s, m и т.д.)", envResultDelayStr)
-	}
-
-	file := flag.String("file", "", "путь к YAML-файлу с вопросами (приоритет над TEST_PATH)")
-	count := flag.Int("n", 0, "количество вопросов в тесте (приоритет над TEST_COUNT)")
+	file := flag.String("file", "", "путь к YAML-файлу с вопросами (приоритет над test_path из конфига)")
+	count := flag.Int("n", 0, "количество вопросов в тесте (приоритет над test_count из конфига)")
 	flag.Parse()
 
-	finalFile := envFile
+	finalFile := cfg.TestPath
 	if *file != "" {
 		finalFile = *file
 	}
 
-	finalCount := envCount
+	finalCount := cfg.TestCount
 	if *count != 0 {
 		finalCount = *count
+	}
+
+	delay, err := time.ParseDuration(cfg.ResultDelay)
+	if err != nil || delay < 0 {
+		return fmt.Errorf("некорректное значение result_delay=%q (ожидается положительное время, например 500ms)", cfg.ResultDelay)
 	}
 
 	pool, err := model.ParseQuestions(finalFile)

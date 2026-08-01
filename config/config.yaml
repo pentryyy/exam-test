@@ -7,3 +7,7 @@ grades:
     label: "удовлетворительно"
   - threshold: 0
     label: "неудовлетворительно"
+
+test_path: "test/philosophy/questions.yaml"
+test_count: 30
+result_delay: "500ms"

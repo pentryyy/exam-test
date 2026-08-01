@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"time"
 
 	"gopkg.in/yaml.v3"
 )
@@ -16,7 +17,10 @@ type GradeThreshold struct {
 }
 
 type Config struct {
-	Grades []GradeThreshold `yaml:"grades"`
+	Grades      []GradeThreshold `yaml:"grades"`
+	TestPath    string           `yaml:"test_path"`
+	TestCount   int              `yaml:"test_count"`
+	ResultDelay string           `yaml:"result_delay"`
 }
 
 func Load() (*Config, error) {
@@ -53,6 +57,19 @@ func (c *Config) validate() error {
 		if g.Threshold < 0 || g.Threshold > 100 {
 			return fmt.Errorf("порог #%d (%q): значение %v вне диапазона [0, 100]", i, g.Label, g.Threshold)
 		}
+	}
+
+	if c.TestPath == "" {
+		return fmt.Errorf("поле test_path не задано")
+	}
+	if c.TestCount <= 0 {
+		return fmt.Errorf("поле test_count должно быть больше нуля (текущее %d)", c.TestCount)
+	}
+	if c.ResultDelay == "" {
+		return fmt.Errorf("поле result_delay не задано")
+	}
+	if _, err := time.ParseDuration(c.ResultDelay); err != nil {
+		return fmt.Errorf("некорректное значение result_delay=%q (ожидается время, например 500ms)", c.ResultDelay)
 	}
 	return nil
 }

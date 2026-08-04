@@ -29,14 +29,6 @@ func clearScreen() {
 	}
 }
 
-func isQuit(s string) bool {
-	switch strings.ToLower(s) {
-	case "!выход", "!quit", "!exit":
-		return true
-	}
-	return false
-}
-
 func askLine(r *bufio.Reader) (string, bool) {
 	line, err := r.ReadString('\n')
 	if err != nil && line == "" {
@@ -52,6 +44,22 @@ func askLine(r *bufio.Reader) (string, bool) {
 func isSkip(s string) bool {
 	switch strings.ToLower(s) {
 	case "!пропуск", "!skip", "":
+		return true
+	}
+	return false
+}
+
+func isRestart(s string) bool {
+	switch strings.ToLower(s) {
+	case "!рестарт", "!restart":
+		return true
+	}
+	return false
+}
+
+func isQuit(s string) bool {
+	switch strings.ToLower(s) {
+	case "!выход", "!quit", "!exit":
 		return true
 	}
 	return false
@@ -164,106 +172,121 @@ func printReport(cfg *config.Config, results []model.Result, planned int, aborte
 
 func runInteractive(cfg *config.Config, t model.Test, d time.Duration) error {
 	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
-	n := t.Count
-	if n > len(t.Questions) {
-		n = len(t.Questions)
-	}
-	if n < 1 {
-		return fmt.Errorf("количество вопросов должно быть больше нуля")
-	}
-
-	order := rng.Perm(len(t.Questions))
-	selected := make([]model.Question, 0, n)
-	for _, idx := range order[:n] {
-		selected = append(selected, t.Questions[idx])
-	}
-
 	r := bufio.NewReader(os.Stdin)
-	printHeader(len(t.Questions), n)
 
-	if !waitForStart(r) {
-		return nil
-	}
+	firstRun := true
 
-	clearScreen()
+	for {
+		n := t.Count
+		if n > len(t.Questions) {
+			n = len(t.Questions)
+		}
+		if n < 1 {
+			return fmt.Errorf("количество вопросов должно быть больше нуля")
+		}
 
-	results := make([]model.Result, 0, n)
-	aborted := false
-
-	for i, q := range selected {
-		if i > 0 {
+		if firstRun {
+			printHeader(len(t.Questions), n)
+			if !waitForStart(r) {
+				return nil
+			}
+			firstRun = false
 			clearScreen()
 		}
 
-		fmt.Printf("\nВопрос %d из %d\n", i+1, n)
-		fmt.Println(strings.Repeat("-", 64))
-		fmt.Println(q.Text)
+		order := rng.Perm(len(t.Questions))
+		selected := make([]model.Question, 0, n)
+		for _, idx := range order[:n] {
+			selected = append(selected, t.Questions[idx])
+		}
 
-		var (
-			userAnswer string
-			ok         bool
-			stop       bool
-		)
+		results := make([]model.Result, 0, n)
+		aborted := false
 
-		if q.IsChoice() {
-			perm := rng.Perm(len(q.Options))
-			shuffled := make([]string, len(q.Options))
-			correctPos := -1
-			for newPos, oldPos := range perm {
-				shuffled[newPos] = q.Options[oldPos]
-				if oldPos == q.CorrectIndex {
-					correctPos = newPos
+		for i, q := range selected {
+			if i > 0 {
+				clearScreen()
+			}
+
+			fmt.Printf("\nВопрос %d из %d\n", i+1, n)
+			fmt.Println(strings.Repeat("-", 64))
+			fmt.Println(q.Text)
+
+			var (
+				userAnswer string
+				ok         bool
+				stop       bool
+			)
+
+			if q.IsChoice() {
+				perm := rng.Perm(len(q.Options))
+				shuffled := make([]string, len(q.Options))
+				correctPos := -1
+				for newPos, oldPos := range perm {
+					shuffled[newPos] = q.Options[oldPos]
+					if oldPos == q.CorrectIndex {
+						correctPos = newPos
+					}
+				}
+				fmt.Println()
+				for j, opt := range shuffled {
+					fmt.Printf("  %d) %s\n", j+1, opt)
+				}
+				choice, s := askChoice(r, len(shuffled))
+				stop = s
+				if !stop && choice >= 0 {
+					userAnswer = shuffled[choice]
+					ok = choice == correctPos
+				}
+			} else {
+				fmt.Println("(введите ответ текстом)")
+				line, s := askLine(r)
+				stop = s
+				if !stop {
+					userAnswer = strings.TrimSpace(line)
+					ok = matcher.MatchText(userAnswer, q)
 				}
 			}
-			fmt.Println()
-			for j, opt := range shuffled {
-				fmt.Printf("  %d) %s\n", j+1, opt)
+
+			if stop {
+				aborted = true
+				break
 			}
-			choice, s := askChoice(r, len(shuffled))
-			stop = s
-			if !stop && choice >= 0 {
-				userAnswer = shuffled[choice]
-				ok = choice == correctPos
+
+			if userAnswer == "" {
+				userAnswer = "(нет ответа)"
 			}
-		} else {
-			fmt.Println("(введите ответ текстом)")
-			line, s := askLine(r)
-			stop = s
-			if !stop {
-				userAnswer = strings.TrimSpace(line)
-				ok = matcher.MatchText(userAnswer, q)
+			if ok {
+				fmt.Println("  Верно")
+			} else {
+				fmt.Println("  Неверно")
+			}
+			results = append(results, model.Result{Q: q, UserAnswer: userAnswer, Correct: ok})
+
+			if i < n-1 {
+				time.Sleep(d)
 			}
 		}
 
-		if stop {
-			aborted = true
-			break
-		}
+		printReport(cfg, results, n, aborted)
 
-		if userAnswer == "" {
-			userAnswer = "(нет ответа)"
-		}
-		if ok {
-			fmt.Println("  Верно")
-		} else {
-			fmt.Println("  Неверно")
-		}
-		results = append(results, model.Result{Q: q, UserAnswer: userAnswer, Correct: ok})
-
-		if i < n-1 {
-			time.Sleep(d)
+		for {
+			fmt.Print("\nВведите !рестарт для повторного теста или !выход для выхода: ")
+			line, err := r.ReadString('\n')
+			if err != nil {
+				return err
+			}
+			line = strings.TrimSpace(line)
+			if isQuit(line) {
+				return nil
+			}
+			if isRestart(line) {
+				clearScreen()
+				break
+			}
+			fmt.Println("Неизвестная команда.")
 		}
 	}
-
-	printReport(cfg, results, n, aborted)
-
-	fmt.Println("\nВведите !выход для выхода.")
-	line, err := r.ReadString('\n')
-	if err != nil && line == "!выход" {
-		return err
-	}
-
-	return nil
 }
 
 func Run(cfg *config.Config) error {

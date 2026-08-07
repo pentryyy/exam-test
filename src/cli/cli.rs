@@ -293,8 +293,6 @@ struct Args {
 }
 
 pub fn run(cfg: &Config) -> Result<()> {
-    use clap::Parser;
-
     let args = Args::parse();
 
     let final_file = args.file.unwrap_or_else(|| cfg.test_path.clone());

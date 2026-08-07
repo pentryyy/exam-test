@@ -10,3 +10,7 @@ anyhow = "1.0"
 humantime = "2.1"
 clap = { version = "4.0", features = ["derive"] }
 rand = "0.8"
+
+[[bin]]
+name = "exam-test"
+path = "src/main.rs"

@@ -149,9 +149,6 @@ fn run_interactive(cfg: &Config, test: Test, delay: Duration) -> Result<()> {
 
     loop {
         let n = test.count.min(test.questions.len());
-        if n == 0 {
-            bail!("Количество вопросов должно быть больше нуля");
-        }
 
         if first_run {
             print_header(test.questions.len(), n);
@@ -282,7 +279,7 @@ fn run_interactive(cfg: &Config, test: Test, delay: Duration) -> Result<()> {
 
 pub fn run(cfg: &Config) -> Result<()> {
     let delay = if cfg.result_delay.is_empty() {
-        Duration::from_millis(500)
+        bail!("поле result_delay не может быть пустым");
     } else {
         humantime::parse_duration(&cfg.result_delay)
             .with_context(|| format!("некорректное значение result_delay={:?}", cfg.result_delay))?

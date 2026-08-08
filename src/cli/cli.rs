@@ -14,18 +14,14 @@ use crate::utils::console_print::{print_header, print_report};
 
 pub struct CliApp<'a> {
     cfg: &'a Config,
-    first_run: bool,
 }
 
 impl<'a> CliApp<'a> {
     pub fn new(cfg: &'a Config) -> Self {
-        CliApp {
-            cfg,
-            first_run: true,
-        }
+        CliApp { cfg }
     }
 
-    pub fn run(&mut self) -> Result<()> {
+    pub fn run(&self) -> Result<()> {
         let delay = if self.cfg.result_delay.is_empty() {
             bail!("поле result_delay не может быть пустым");
         } else {
@@ -123,18 +119,19 @@ impl<'a> CliApp<'a> {
         }
     }
 
-    fn run_interactive(&mut self, test: Test, delay: Duration) -> Result<()> {
+    fn run_interactive(&self, test: Test, delay: Duration) -> Result<()> {
         let mut rng = rand::thread_rng();
+        let mut first_run = true;
 
         loop {
             let n = test.count.min(test.questions.len());
 
-            if self.first_run {
+            if first_run {
                 print_header(test.questions.len(), n);
                 if !self.wait_for_start()? {
                     return Ok(());
                 }
-                self.first_run = false;
+                first_run = false;
                 clear_screen()?;
             }
 

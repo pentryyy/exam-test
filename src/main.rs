@@ -17,7 +17,7 @@ fn main() {
 
 fn run_app() -> Result<()> {
     let cfg = Config::load().context("Ошибка загрузки конфига")?;
-    let mut app = CliApp::new(&cfg);
+    let app = CliApp::new(&cfg);
     app.run().context("Ошибка запуска тестов")?;
     Ok(())
 }

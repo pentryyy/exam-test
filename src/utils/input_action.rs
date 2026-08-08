@@ -1,6 +1,6 @@
 use rand::prelude::SliceRandom;
 use crate::dto::question::Question;
-use crate::types::input_type::InputType;
+use crate::types::answer_type::AnswerType;
 use crate::utils::input_handler::{ask_multiple_choice, ask_single_choice, ask_text_input};
 use crate::utils::text_matcher::match_text;
 
@@ -71,17 +71,17 @@ pub fn handle_answer(q: &Question, rng: &mut rand::rngs::ThreadRng) -> anyhow::R
     println!("{}", q.text);
 
     match answer_type {
-        InputType::SingleAnswer => {
+        AnswerType::SingleAnswer => {
             let (shuffled, correct_indices) = prepare_shuffled_options(q, rng);
             display_options(&shuffled);
             process_single_choice(shuffled, correct_indices)
         }
-        InputType::MultipleAnswer => {
+        AnswerType::MultipleAnswer => {
             let (shuffled, correct_indices) = prepare_shuffled_options(q, rng);
             display_options(&shuffled);
             process_multiple_choice(shuffled, correct_indices)
         }
-        InputType::TextAnswer => {
+        AnswerType::TextAnswer => {
             let (answer, stop) = ask_text_input()?;
             if stop {
                 return Ok((String::new(), false));

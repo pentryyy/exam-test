@@ -1,5 +1,5 @@
 #[derive(Debug, Clone, PartialEq)]
-pub enum InputType {
+pub enum AnswerType {
     SingleAnswer,
     MultipleAnswer,
     TextAnswer,

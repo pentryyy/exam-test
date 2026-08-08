@@ -1,4 +1,4 @@
-use crate::cli::cli::run;
+use crate::cli::cli::CliApp;
 use crate::config::config::Config;
 use anyhow::{Context, Result};
 
@@ -17,6 +17,7 @@ fn main() {
 
 fn run_app() -> Result<()> {
     let cfg = Config::load().context("Ошибка загрузки конфига")?;
-    run(&cfg).context("Ошибка запуска тестов")?;
+    let mut app = CliApp::new(&cfg);
+    app.run().context("Ошибка запуска тестов")?;
     Ok(())
 }

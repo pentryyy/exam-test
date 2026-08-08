@@ -2,185 +2,174 @@ use crate::config::config::Config;
 use crate::dto::answer_result::AnswerResult;
 use crate::dto::question::Question;
 use crate::dto::test::Test;
-use crate::utils::input_handler::{ask_line, is_quit, is_restart, wait_for_start};
+use crate::utils::console_clear::{clear_screen, flush_screen};
 use crate::utils::input_action::handle_answer;
-use crate::utils::clr_operation::{clear_screen, flush_screen};
+use crate::utils::input_handler::ask_line;
 use crate::utils::question_parser::parse_questions;
 use anyhow::{bail, Context, Result};
 use rand::prelude::SliceRandom;
 use std::time::Duration;
+use crate::types::console_operation_type::ConsoleOperation;
+use crate::utils::console_print::{print_header, print_report};
 
-fn print_header(pool: usize, n: usize) {
-    println!("{}", "=".repeat(64));
-    println!("ТЕСТ ЭКЗАМЕНА");
-    println!("{}", "=".repeat(64));
-    println!(
-        "Вопросов в базе: {}. В тесте: {} (выбраны случайно).",
-        pool, n
-    );
-    println!("Для вопросов с вариантами введите номер варианта.");
-    println!("Для вопросов с множественным выбором введите номера через запятую.");
-    println!("Команды: !пропуск — пропустить вопрос, !выход — завершить тест досрочно, !старт - для начала теста.");
+pub struct CliApp<'a> {
+    cfg: &'a Config,
+    first_run: bool,
 }
 
-fn progress_bar(percent: f64) -> String {
-    const WIDTH: usize = 40;
-    let filled = (percent / 100.0 * WIDTH as f64).round() as usize;
-    let filled = filled.min(WIDTH);
-    let empty = WIDTH - filled;
-    format!("[{}{}]", "#".repeat(filled), ".".repeat(empty))
-}
-
-fn print_report(cfg: &Config, results: &[AnswerResult], planned: usize, aborted: bool) {
-    println!();
-    println!("{}", "=".repeat(64));
-    println!("  РЕЗУЛЬТАТЫ");
-    println!("{}", "=".repeat(64));
-
-    if results.is_empty() {
-        println!("Ни на один вопрос ответа не получено.");
-        return;
+impl<'a> CliApp<'a> {
+    pub fn new(cfg: &'a Config) -> Self {
+        CliApp {
+            cfg,
+            first_run: true,
+        }
     }
 
-    let right = results.iter().filter(|r| r.correct).count();
-    let wrong: Vec<_> = results.iter().filter(|r| !r.correct).collect();
+    pub fn run(&mut self) -> Result<()> {
+        let delay = if self.cfg.result_delay.is_empty() {
+            bail!("поле result_delay не может быть пустым");
+        } else {
+            humantime::parse_duration(&self.cfg.result_delay)
+                .with_context(|| format!("некорректное значение result_delay={:?}", self.cfg.result_delay))?
+        };
 
-    let total = planned;
-    if aborted {
-        println!("Тест прерван: отвечено {} из {} вопросов.", results.len(), planned);
+        let pool = parse_questions(&self.cfg.test_path)
+            .with_context(|| format!("ошибка чтения вопросов из файла {:?}", self.cfg.test_path))?;
+
+        let test = Test {
+            questions: pool,
+            count: self.cfg.test_count,
+        };
+
+        self.run_interactive(test, delay)
     }
-    let percent = right as f64 / total as f64 * 100.0;
 
-    println!("Правильных ответов: {} из {}", right, total);
-    println!("Результат: {:.1}% — {}", percent, cfg.grade(percent));
-    println!("{}", progress_bar(percent));
+    fn wait_for_start(&self) -> Result<bool> {
+        loop {
+            flush_screen()?;
 
-    if wrong.is_empty() {
-        println!("\nОшибок нет. Отличная работа!");
-        return;
+            let (line, stop) = ask_line()?;
+            if stop {
+                return Ok(false);
+            }
+
+            match ConsoleOperation::from_input(&line) {
+                ConsoleOperation::Start => return Ok(true),
+                ConsoleOperation::Quit => return Ok(false),
+                _ => println!("Неизвестная команда. Введите !старт или !выход."),
+            }
+        }
     }
 
-    println!("\nНеверно отвеченные вопросы ({}):", wrong.len());
-    for (i, r) in wrong.iter().enumerate() {
+    fn handle_question(
+        &self,
+        q: &Question,
+        index: usize,
+        total: usize,
+        rng: &mut rand::rngs::ThreadRng,
+    ) -> Result<(AnswerResult, bool)> {
+        println!("\nВопрос {} из {}", index + 1, total);
         println!("{}", "-".repeat(64));
-        println!("{}. {}", i + 1, r.question.text);
-        println!("   Ваш ответ:        {}", r.user_answer);
-        println!("   Правильный ответ: {}", r.question.correct_answer_string());
-    }
-    println!("{}", "-".repeat(64));
-}
 
-fn run_interactive(cfg: &Config, test: Test, delay: Duration) -> Result<()> {
-    let mut rng = rand::thread_rng();
-    let mut first_run = true;
+        let (user_answer, correct) = handle_answer(q, rng)?;
 
-    loop {
-        let n = test.count.min(test.questions.len());
-
-        if first_run {
-            print_header(test.questions.len(), n);
-            if !wait_for_start()? {
-                return Ok(());
-            }
-            first_run = false;
-            clear_screen()?;
-        }
-
-        let mut selected: Vec<Question> = test.questions.clone();
-        selected.shuffle(&mut rng);
-        selected.truncate(n);
-
-        let mut results = Vec::with_capacity(n);
-        let mut aborted = false;
-
-        for (i, q) in selected.iter().enumerate() {
-            if i > 0 {
-                clear_screen()?;
-            }
-
-            println!("\nВопрос {} из {}", i + 1, n);
-            println!("{}", "-".repeat(64));
-
-            let (user_answer, correct) = handle_answer(q, &mut rng)?;
-            if user_answer.is_empty() && correct == false {
-                aborted = true;
-                break;
-            }
-
-            if user_answer.is_empty() {
-                let display = if user_answer == "(пропущено)" {
-                    "(пропущено)"
-                } else {
-                    "(нет ответа)"
-                };
-                results.push(AnswerResult {
+        if user_answer.is_empty() && !correct {
+            return Ok((
+                AnswerResult {
                     question: q.clone(),
-                    user_answer: display.to_string(),
+                    user_answer: "(пропущено)".to_string(),
                     correct: false,
-                });
-                println!("  Неверно");
-            } else {
-                let display = if user_answer.trim().is_empty() {
-                    "(нет ответа)"
-                } else {
-                    &user_answer
-                };
-                results.push(AnswerResult {
-                    question: q.clone(),
-                    user_answer: display.to_string(),
-                    correct,
-                });
-                if correct {
-                    println!("  Верно");
-                } else {
-                    println!("  Неверно");
-                }
-            }
-
-            if i < n - 1 {
-                std::thread::sleep(delay);
-            }
+                },
+                true, // true = пропущено/прервано
+            ));
         }
 
-        clear_screen()?;
-        print_report(cfg, &results, n, aborted);
+        let display = if user_answer.trim().is_empty() {
+            "(нет ответа)"
+        } else {
+            &user_answer
+        };
 
+        let result = AnswerResult {
+            question: q.clone(),
+            user_answer: display.to_string(),
+            correct,
+        };
+
+        if correct {
+            println!("  Верно");
+        } else {
+            println!("  Неверно");
+        }
+
+        Ok((result, false))
+    }
+
+    fn handle_restart_prompt(&self) -> Result<bool> {
         loop {
             print!("\nВведите !рестарт для повторного теста или !выход для выхода: ");
             flush_screen()?;
 
             let (line, stop) = ask_line()?;
             if stop {
-                return Ok(());
+                return Ok(false);
             }
-            let line = line.trim();
-            if is_quit(line) {
-                return Ok(());
+
+            match ConsoleOperation::from_input(&line) {
+                ConsoleOperation::Restart => return Ok(true),
+                ConsoleOperation::Quit => return Ok(false),
+                _ => print!("Неизвестная команда. Введите !рестарт или !выход."),
             }
-            if is_restart(line) {
-                clear_screen()?;
-                break;
-            }
-            println!("Неизвестная команда.");
         }
     }
-}
 
-pub fn run(cfg: &Config) -> Result<()> {
-    let delay = if cfg.result_delay.is_empty() {
-        bail!("поле result_delay не может быть пустым");
-    } else {
-        humantime::parse_duration(&cfg.result_delay)
-            .with_context(|| format!("некорректное значение result_delay={:?}", cfg.result_delay))?
-    };
+    fn run_interactive(&mut self, test: Test, delay: Duration) -> Result<()> {
+        let mut rng = rand::thread_rng();
 
-    let pool = parse_questions(&cfg.test_path)
-        .with_context(|| format!("ошибка чтения вопросов из файла {:?}", cfg.test_path))?;
+        loop {
+            let n = test.count.min(test.questions.len());
 
-    let test = Test {
-        questions: pool,
-        count: cfg.test_count,
-    };
+            if self.first_run {
+                print_header(test.questions.len(), n);
+                if !self.wait_for_start()? {
+                    return Ok(());
+                }
+                self.first_run = false;
+                clear_screen()?;
+            }
 
-    run_interactive(cfg, test, delay)
+            let mut selected: Vec<Question> = test.questions.clone();
+            selected.shuffle(&mut rng);
+            selected.truncate(n);
+
+            let mut results = Vec::with_capacity(n);
+            let mut aborted = false;
+
+            for (i, q) in selected.iter().enumerate() {
+                if i > 0 {
+                    clear_screen()?;
+                }
+
+                let (result, skipped) = self.handle_question(q, i, n, &mut rng)?;
+                results.push(result);
+
+                if skipped {
+                    aborted = true;
+                    break;
+                }
+
+                if i < n - 1 {
+                    std::thread::sleep(delay);
+                }
+            }
+
+            clear_screen()?;
+            print_report(&results, n, aborted, self.cfg);
+
+            if !self.handle_restart_prompt()? {
+                return Ok(());
+            }
+            clear_screen()?;
+        }
+    }
 }

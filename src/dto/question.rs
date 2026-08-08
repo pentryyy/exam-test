@@ -1,4 +1,4 @@
-use crate::types::answer_type::AnswerType;
+use crate::types::input_type::InputType;
 
 #[derive(Debug, Clone)]
 pub struct Question {
@@ -19,18 +19,18 @@ impl Question {
         self.is_choice() && self.correct_indices.len() > 1
     }
 
-    pub fn get_answer_type(&self) -> AnswerType {
+    pub fn get_answer_type(&self) -> InputType {
         if self.is_choice() {
             if self.is_multiple_choice() {
                 println!("[ВЫБЕРИТЕ НЕСКОЛЬКО ОТВЕТОВ]");
-                AnswerType::Multiple
+                InputType::MultipleAnswer
             } else {
                 println!("[ВЫБЕРИТЕ ОДИН ОТВЕТ]");
-                AnswerType::Single
+                InputType::SingleAnswer
             }
         } else {
             println!("[ВВЕДИТЕ ТЕКСТОВЫЙ ОТВЕТ]");
-            AnswerType::Text
+            InputType::TextAnswer
         }
     }
 

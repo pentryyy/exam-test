@@ -2,9 +2,9 @@ use crate::config::config::Config;
 use crate::dto::answer_result::AnswerResult;
 use crate::dto::question::Question;
 use crate::dto::test::Test;
-use crate::utils::answer_handler::{ask_line, is_quit, is_restart, wait_for_start};
-use crate::utils::answer_type_action::handle_answer;
-use crate::utils::clr_operation::clear_screen;
+use crate::utils::input_handler::{ask_line, is_quit, is_restart, wait_for_start};
+use crate::utils::input_action::handle_answer;
+use crate::utils::clr_operation::{clear_screen, flush_screen};
 use crate::utils::question_parser::parse_questions;
 use anyhow::{bail, Context, Result};
 use rand::prelude::SliceRandom;
@@ -147,6 +147,8 @@ fn run_interactive(cfg: &Config, test: Test, delay: Duration) -> Result<()> {
 
         loop {
             print!("\nВведите !рестарт для повторного теста или !выход для выхода: ");
+            flush_screen()?;
+
             let (line, stop) = ask_line()?;
             if stop {
                 return Ok(());

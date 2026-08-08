@@ -92,7 +92,7 @@ pub fn ask_single_choice(max: usize) -> anyhow::Result<(i32, bool)> {
     }
 }
 
-pub fn ask_text_answer() -> anyhow::Result<(String, bool)> {
+pub fn ask_text_input() -> anyhow::Result<(String, bool)> {
     loop {
         print!("Ваш ответ: ");
         flush_screen()?;

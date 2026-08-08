@@ -1,1 +1,1 @@
-pub mod answer_type;
+pub mod input_type;

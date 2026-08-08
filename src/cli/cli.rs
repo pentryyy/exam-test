@@ -230,6 +230,16 @@ fn run_interactive(cfg: &Config, test: Test, delay: Duration) -> Result<()> {
 
             println!("\nВопрос {} из {}", i + 1, n);
             println!("{}", "-".repeat(64));
+
+            if q.is_choice() {
+                if q.is_multiple_choice() {
+                    println!("[ВЫБЕРИТЕ НЕСКОЛЬКО ОТВЕТОВ]");
+                } else {
+                    println!("[ВЫБЕРИТЕ ОДИН ОТВЕТ]");
+                }
+            } else {
+                println!("[ВВЕДИТЕ ТЕКСТОВЫЙ ОТВЕТ]");
+            }
             println!("{}", q.text);
 
             let (user_answer, correct) = if q.is_choice() {
@@ -249,9 +259,6 @@ fn run_interactive(cfg: &Config, test: Test, delay: Duration) -> Result<()> {
                 }
 
                 let is_multiple = q.is_multiple_choice();
-                if is_multiple {
-                    println!("(выберите один или несколько вариантов через запятую)");
-                }
 
                 let (chosen_indices, stop) = if is_multiple {
                     ask_multiple_choice(shuffled.len())?
@@ -295,7 +302,7 @@ fn run_interactive(cfg: &Config, test: Test, delay: Duration) -> Result<()> {
                     ("(пропущено)".to_string(), false)
                 }
             } else {
-                println!("(введите ответ текстом)");
+                println!("\n(введите ответ текстом)");
                 let (line, stop) = ask_line()?;
                 if stop {
                     aborted = true;

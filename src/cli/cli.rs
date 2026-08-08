@@ -10,17 +10,14 @@ use crate::dto::test::Test;
 use crate::util::question_parser::parse_questions;
 use crate::util::text_matcher::match_text;
 
-fn flush_console() -> Result<()>{
-    io::stdout().flush()?;
-    Ok(())
-}
-
-fn clear_screen() {
+fn clear_screen() -> Result<()> {
     if cfg!(target_os = "windows") {
-        let _ = Command::new("cmd").args(["/c", "cls"]).status();
+        Command::new("cmd").args(["/c", "cls"]).status()?;
+        Ok(())
     } else {
         print!("\x1B[2J\x1B[1;1H");
-        let _ = io::stdout().flush();
+        io::stdout().flush()?;
+        Ok(())
     }
 }
 
@@ -71,7 +68,6 @@ fn wait_for_start() -> Result<bool> {
 fn ask_multiple_choice(max: usize) -> Result<(Vec<usize>, bool)> {
     loop {
         print!("Ваши ответы: ");
-        flush_console()?;
         let (line, stop) = ask_line()?;
         if stop {
             return Ok((Vec::new(), true));
@@ -122,7 +118,6 @@ fn ask_multiple_choice(max: usize) -> Result<(Vec<usize>, bool)> {
 fn ask_single_choice(max: usize) -> Result<(i32, bool)> {
     loop {
         print!("Ваш ответ (1-{}): ", max);
-        flush_console()?;
         let (line, stop) = ask_line()?;
         if stop {
             return Ok((0, true));
@@ -213,7 +208,7 @@ fn run_interactive(cfg: &Config, test: Test, delay: Duration) -> Result<()> {
                 return Ok(());
             }
             first_run = false;
-            clear_screen();
+            clear_screen()?;
         }
 
         let mut selected: Vec<Question> = test.questions.clone();
@@ -225,7 +220,7 @@ fn run_interactive(cfg: &Config, test: Test, delay: Duration) -> Result<()> {
 
         for (i, q) in selected.iter().enumerate() {
             if i > 0 {
-                clear_screen();
+                clear_screen()?;
             }
 
             println!("\nВопрос {} из {}", i + 1, n);
@@ -257,6 +252,8 @@ fn run_interactive(cfg: &Config, test: Test, delay: Duration) -> Result<()> {
                 for (j, opt) in shuffled.iter().enumerate() {
                     println!("  {}) {}", j + 1, opt);
                 }
+
+                println!();
 
                 let is_multiple = q.is_multiple_choice();
 
@@ -302,7 +299,6 @@ fn run_interactive(cfg: &Config, test: Test, delay: Duration) -> Result<()> {
                     ("(пропущено)".to_string(), false)
                 }
             } else {
-                println!("\n(введите ответ текстом)");
                 let (line, stop) = ask_line()?;
                 if stop {
                     aborted = true;
@@ -356,11 +352,11 @@ fn run_interactive(cfg: &Config, test: Test, delay: Duration) -> Result<()> {
             }
         }
 
+        clear_screen()?;
         print_report(cfg, &results, n, aborted);
 
         loop {
             print!("\nВведите !рестарт для повторного теста или !выход для выхода: ");
-            flush_console()?;
             let (line, stop) = ask_line()?;
             if stop {
                 return Ok(());
@@ -370,14 +366,13 @@ fn run_interactive(cfg: &Config, test: Test, delay: Duration) -> Result<()> {
                 return Ok(());
             }
             if is_restart(line) {
-                clear_screen();
+                clear_screen()?;
                 break;
             }
             println!("Неизвестная команда.");
         }
     }
 }
-
 pub fn run(cfg: &Config) -> Result<()> {
     let delay = if cfg.result_delay.is_empty() {
         bail!("поле result_delay не может быть пустым");

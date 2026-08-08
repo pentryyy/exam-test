@@ -119,7 +119,7 @@ fn print_report(cfg: &Config, results: &[AnswerResult], planned: usize, aborted:
     let right = results.iter().filter(|r| r.correct).count();
     let wrong: Vec<_> = results.iter().filter(|r| !r.correct).collect();
 
-    let total = results.len();
+    let total = planned;
     if aborted {
         println!("Тест прерван: отвечено {} из {} вопросов.", total, planned);
     }

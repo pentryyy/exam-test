@@ -1,48 +1,41 @@
-use crate::types::answer_type::AnswerType;
+use crate::types::answer_type::{AnswerKind, AnswerType};
 
 #[derive(Debug, Clone)]
 pub struct Question {
     pub text: String,
     pub options: Vec<String>,
-    pub correct_indices: Vec<usize>,
-    pub correct_text: String,
+    pub correct: AnswerType,
     pub accept: Vec<String>,
     pub line: usize,
 }
 
 impl Question {
+    fn log_answer_type(&self) {
+        match &self.correct {
+            AnswerType::SingleAnswer(_) => println!("[ВЫБЕРИТЕ ОДИН ОТВЕТ]"),
+            AnswerType::MultipleAnswer(_) => println!("[ВЫБЕРИТЕ НЕСКОЛЬКО ОТВЕТОВ]"),
+            AnswerType::TextAnswer(_) => println!("[ВВЕДИТЕ ТЕКСТОВЫЙ ОТВЕТ]"),
+        }
+    }
+
+    pub fn get_answer_type(&self) -> AnswerKind {
+        self.log_answer_type();
+        self.correct.kind()
+    }
+
     pub fn is_choice(&self) -> bool {
         !self.options.is_empty()
     }
 
-    fn is_multiple_choice(&self) -> bool {
-        self.is_choice() && self.correct_indices.len() > 1
-    }
-
-    pub fn get_answer_type(&self) -> AnswerType {
-        if self.is_choice() {
-            if self.is_multiple_choice() {
-                println!("[ВЫБЕРИТЕ НЕСКОЛЬКО ОТВЕТОВ]");
-                AnswerType::MultipleAnswer
-            } else {
-                println!("[ВЫБЕРИТЕ ОДИН ОТВЕТ]");
-                AnswerType::SingleAnswer
-            }
-        } else {
-            println!("[ВВЕДИТЕ ТЕКСТОВЫЙ ОТВЕТ]");
-            AnswerType::TextAnswer
-        }
-    }
-
     pub fn correct_answer_string(&self) -> String {
-        if self.is_choice() {
-            let answers: Vec<String> = self.correct_indices
+        match &self.correct {
+            AnswerType::SingleAnswer(idx) => self.options[*idx].clone(),
+            AnswerType::MultipleAnswer(indices) => indices
                 .iter()
-                .map(|&idx| self.options[idx].clone())
-                .collect();
-            answers.join(", ")
-        } else {
-            self.correct_text.clone()
+                .map(|&i| self.options[i].clone())
+                .collect::<Vec<_>>()
+                .join(", "),
+            AnswerType::TextAnswer(text) => text.clone(),
         }
     }
 }

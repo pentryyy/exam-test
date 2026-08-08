@@ -1,21 +1,35 @@
 use rand::prelude::SliceRandom;
 use crate::dto::question::Question;
-use crate::types::answer_type::AnswerType;
+use crate::types::answer_type::{AnswerKind, AnswerType};
 use crate::utils::input_handler::{ask_multiple_choice, ask_single_choice, ask_text_input};
 use crate::utils::text_matcher::match_text;
 
 fn prepare_shuffled_options(q: &Question, rng: &mut rand::rngs::ThreadRng) -> (Vec<String>, Vec<usize>) {
-    let mut shuffled = q.options.clone();
-    shuffled.shuffle(rng);
+    let original_correct_indices: Vec<usize> = match &q.correct {
+        AnswerType::SingleAnswer(idx) => vec![*idx],
+        AnswerType::MultipleAnswer(indices) => indices.clone(),
+        AnswerType::TextAnswer(_) => {
+            return (q.options.clone(), Vec::new());
+        }
+    };
 
-    let correct_indices: Vec<usize> = q.correct_indices
+    let mut indexed: Vec<(usize, String)> = q.options.iter().cloned().enumerate().collect();
+    indexed.shuffle(rng);
+
+    let mut shuffled_options = Vec::with_capacity(indexed.len());
+    let mut original_to_shuffled = vec![0; q.options.len()];
+
+    for (new_pos, (orig_idx, value)) in indexed.into_iter().enumerate() {
+        shuffled_options.push(value);
+        original_to_shuffled[orig_idx] = new_pos;
+    }
+
+    let shuffled_correct_indices: Vec<usize> = original_correct_indices
         .iter()
-        .map(|&original_idx| {
-            shuffled.iter().position(|opt| *opt == q.options[original_idx]).unwrap()
-        })
+        .map(|&orig_idx| original_to_shuffled[orig_idx])
         .collect();
 
-    (shuffled, correct_indices)
+    (shuffled_options, shuffled_correct_indices)
 }
 
 fn display_options(shuffled: &[String]) {
@@ -71,17 +85,17 @@ pub fn handle_answer(q: &Question, rng: &mut rand::rngs::ThreadRng) -> anyhow::R
     println!("{}", q.text);
 
     match answer_type {
-        AnswerType::SingleAnswer => {
+        AnswerKind::SingleAnswer => {
             let (shuffled, correct_indices) = prepare_shuffled_options(q, rng);
             display_options(&shuffled);
             process_single_choice(shuffled, correct_indices)
         }
-        AnswerType::MultipleAnswer => {
+        AnswerKind::MultipleAnswer => {
             let (shuffled, correct_indices) = prepare_shuffled_options(q, rng);
             display_options(&shuffled);
             process_multiple_choice(shuffled, correct_indices)
         }
-        AnswerType::TextAnswer => {
+        AnswerKind::TextAnswer => {
             let (answer, stop) = ask_text_input()?;
             if stop {
                 return Ok((String::new(), false));

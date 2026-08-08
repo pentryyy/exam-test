@@ -1,4 +1,5 @@
 use crate::dto::question::Question;
+use crate::types::answer_type::AnswerType;
 
 pub fn match_text(user: &str, q: &Question) -> bool {
     let nu = normalize(user);
@@ -6,8 +7,13 @@ pub fn match_text(user: &str, q: &Question) -> bool {
         return false;
     }
 
+    let correct_text = match &q.correct {
+        AnswerType::TextAnswer(text) => text.clone(),
+        _ => return false,
+    };
+
     let mut variants = Vec::with_capacity(1 + q.accept.len());
-    variants.push(q.correct_text.clone());
+    variants.push(correct_text);
     variants.extend(q.accept.clone());
 
     for v in variants {

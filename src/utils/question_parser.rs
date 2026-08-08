@@ -1,9 +1,10 @@
 use std::fs;
 use std::str::FromStr;
-use anyhow::{anyhow, Context};
+use anyhow::{anyhow, Context, Result};
 use crate::dto::question::Question;
+use crate::types::answer_type::AnswerType;
 
-pub fn parse_questions(path: &str) -> anyhow::Result<Vec<Question>> {
+pub fn parse_questions(path: &str) -> Result<Vec<Question>> {
     let content = fs::read_to_string(path)
         .with_context(|| format!("не удалось прочитать файл {}", path))?;
     let content = content.replace("\r\n", "\n");
@@ -29,8 +30,7 @@ pub fn parse_questions(path: &str) -> anyhow::Result<Vec<Question>> {
             cur = Some(Question {
                 text,
                 options: Vec::new(),
-                correct_indices: Vec::new(),
-                correct_text: String::new(),
+                correct: AnswerType::TextAnswer(String::new()), // временное значение
                 accept: Vec::new(),
                 line: line_no,
             });
@@ -65,11 +65,11 @@ pub fn parse_questions(path: &str) -> anyhow::Result<Vec<Question>> {
                 if indices.is_empty() {
                     return Err(anyhow!("строка {}: массив correct не может быть пустым", line_no));
                 }
-                cur_ref.correct_indices = indices;
+                cur_ref.correct = AnswerType::MultipleAnswer(indices);
             } else if let Ok(n) = usize::from_str(val) {
-                cur_ref.correct_indices = vec![n];
+                cur_ref.correct = AnswerType::SingleAnswer(n);
             } else {
-                cur_ref.correct_text = unquote(val);
+                cur_ref.correct = AnswerType::TextAnswer(unquote(val));
             }
             mode.clear();
         } else if line.starts_with("- ") && mode == "accept" {
@@ -97,27 +97,55 @@ pub fn parse_questions(path: &str) -> anyhow::Result<Vec<Question>> {
             return Err(anyhow!("строка {}: пустой текст вопроса", q.line));
         }
         if q.is_choice() {
-            if q.correct_indices.is_empty() {
-                return Err(anyhow!(
-                    "строка {}: для вопроса с вариантами не указан correct индекс(ы)",
-                    q.line
-                ));
-            }
-            for &idx in &q.correct_indices {
-                if idx >= q.options.len() {
+            match &q.correct {
+                AnswerType::SingleAnswer(idx) => {
+                    if *idx >= q.options.len() {
+                        return Err(anyhow!(
+                            "строка {}: correct индекс {} вне диапазона вариантов ({})",
+                            q.line, idx, q.options.len()
+                        ));
+                    }
+                }
+                AnswerType::MultipleAnswer(indices) => {
+                    if indices.is_empty() {
+                        return Err(anyhow!(
+                            "строка {}: массив correct не может быть пустым для вопроса с вариантами",
+                            q.line
+                        ));
+                    }
+                    for &idx in indices {
+                        if idx >= q.options.len() {
+                            return Err(anyhow!(
+                                "строка {}: correct индекс {} вне диапазона вариантов ({})",
+                                q.line, idx, q.options.len()
+                            ));
+                        }
+                    }
+                }
+                AnswerType::TextAnswer(_) => {
                     return Err(anyhow!(
-                        "строка {}: correct={} вне диапазона вариантов ({})",
-                        q.line,
-                        idx,
-                        q.options.len()
+                        "строка {}: для вопроса с вариантами указан текстовый ответ, ожидался индекс или массив",
+                        q.line
                     ));
                 }
             }
-        } else if q.correct_text.is_empty() {
-            return Err(anyhow!(
-                "строка {}: у вопроса со свободным вводом не задан текстовый ответ",
-                q.line
-            ));
+        } else {
+            match &q.correct {
+                AnswerType::TextAnswer(text) => {
+                    if text.is_empty() {
+                        return Err(anyhow!(
+                            "строка {}: у вопроса со свободным вводом не задан текстовый ответ",
+                            q.line
+                        ));
+                    }
+                }
+                _ => {
+                    return Err(anyhow!(
+                        "строка {}: у вопроса без вариантов ожидается текстовый ответ, но найден индекс/массив",
+                        q.line
+                    ));
+                }
+            }
         }
     }
 

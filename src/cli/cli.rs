@@ -33,7 +33,7 @@ fn ask_line() -> Result<(String, bool)> {
 
 fn is_skip(s: &str) -> bool {
     let low = s.to_lowercase();
-    low == "!пропуск" || low == "!skip" || s.is_empty()
+    low == "!пропуск" || low == "!skip"
 }
 
 fn is_restart(s: &str) -> bool {

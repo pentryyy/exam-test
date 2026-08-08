@@ -2,7 +2,6 @@ use anyhow::{bail, Context, Result};
 use std::io::{self, Write};
 use std::process::Command;
 use std::time::Duration;
-use clap::Parser;
 use rand::prelude::SliceRandom;
 use crate::config::config::Config;
 use crate::dto::answer_result::AnswerResult;
@@ -150,9 +149,6 @@ fn run_interactive(cfg: &Config, test: Test, delay: Duration) -> Result<()> {
 
     loop {
         let n = test.count.min(test.questions.len());
-        if n == 0 {
-            bail!("Количество вопросов должно быть больше нуля");
-        }
 
         if first_run {
             print_header(test.questions.len(), n);
@@ -281,38 +277,20 @@ fn run_interactive(cfg: &Config, test: Test, delay: Duration) -> Result<()> {
     }
 }
 
-#[derive(Parser)]
-#[command(author, version, about, long_about = None)]
-struct Args {
-
-    #[arg(short, long)]
-    file: Option<String>,
-
-    #[arg(short = 'n', long)]
-    count: Option<usize>,
-}
-
 pub fn run(cfg: &Config) -> Result<()> {
-    use clap::Parser;
-
-    let args = Args::parse();
-
-    let final_file = args.file.unwrap_or_else(|| cfg.test_path.clone());
-    let final_count = args.count.unwrap_or(cfg.test_count);
-
     let delay = if cfg.result_delay.is_empty() {
-        Duration::from_millis(500)
+        bail!("поле result_delay не может быть пустым");
     } else {
         humantime::parse_duration(&cfg.result_delay)
             .with_context(|| format!("некорректное значение result_delay={:?}", cfg.result_delay))?
     };
 
-    let pool = parse_questions(&final_file)
-        .with_context(|| format!("ошибка чтения вопросов из файла {:?}", final_file))?;
+    let pool = parse_questions(&cfg.test_path)
+        .with_context(|| format!("ошибка чтения вопросов из файла {:?}", cfg.test_path))?;
 
     let test = Test {
         questions: pool,
-        count: final_count,
+        count: cfg.test_count,
     };
 
     run_interactive(cfg, test, delay)

@@ -1,3 +1,5 @@
+use crate::types::answer_type::AnswerType;
+
 #[derive(Debug, Clone)]
 pub struct Question {
     pub text: String,
@@ -13,8 +15,23 @@ impl Question {
         !self.options.is_empty()
     }
 
-    pub fn is_multiple_choice(&self) -> bool {
+    fn is_multiple_choice(&self) -> bool {
         self.is_choice() && self.correct_indices.len() > 1
+    }
+
+    pub fn get_answer_type(&self) -> AnswerType {
+        if self.is_choice() {
+            if self.is_multiple_choice() {
+                println!("[ВЫБЕРИТЕ НЕСКОЛЬКО ОТВЕТОВ]");
+                AnswerType::Multiple
+            } else {
+                println!("[ВЫБЕРИТЕ ОДИН ОТВЕТ]");
+                AnswerType::Single
+            }
+        } else {
+            println!("[ВВЕДИТЕ ТЕКСТОВЫЙ ОТВЕТ]");
+            AnswerType::Text
+        }
     }
 
     pub fn correct_answer_string(&self) -> String {

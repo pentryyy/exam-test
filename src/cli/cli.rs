@@ -1,25 +1,15 @@
-use anyhow::{bail, Context, Result};
-use std::io::{self, Write};
-use std::process::Command;
-use std::time::Duration;
-use rand::prelude::SliceRandom;
 use crate::config::config::Config;
 use crate::dto::answer_result::AnswerResult;
 use crate::dto::question::Question;
 use crate::dto::test::Test;
-use crate::util::question_parser::parse_questions;
-use crate::util::text_matcher::match_text;
-
-fn clear_screen() -> Result<()> {
-    if cfg!(target_os = "windows") {
-        Command::new("cmd").args(["/c", "cls"]).status()?;
-        Ok(())
-    } else {
-        print!("\x1B[2J\x1B[1;1H");
-        io::stdout().flush()?;
-        Ok(())
-    }
-}
+use crate::utils::question_parser::parse_questions;
+use crate::utils::text_matcher::match_text;
+use anyhow::{bail, Context, Result};
+use rand::prelude::SliceRandom;
+use std::io::{self};
+use std::time::Duration;
+use crate::types::AnswerType;
+use crate::utils::clr_operation::{clear_screen, flush_screen};
 
 fn ask_line() -> Result<(String, bool)> {
     let mut line = String::new();
@@ -67,7 +57,9 @@ fn wait_for_start() -> Result<bool> {
 
 fn ask_multiple_choice(max: usize) -> Result<(Vec<usize>, bool)> {
     loop {
-        print!("Ваши ответы: ");
+        print!("Ваши ответы (1-{} через запятую): ", max);
+        flush_screen()?;
+
         let (line, stop) = ask_line()?;
         if stop {
             return Ok((Vec::new(), true));
@@ -118,6 +110,8 @@ fn ask_multiple_choice(max: usize) -> Result<(Vec<usize>, bool)> {
 fn ask_single_choice(max: usize) -> Result<(i32, bool)> {
     loop {
         print!("Ваш ответ (1-{}): ", max);
+        flush_screen()?;
+
         let (line, stop) = ask_line()?;
         if stop {
             return Ok((0, true));
@@ -132,6 +126,28 @@ fn ask_single_choice(max: usize) -> Result<(i32, bool)> {
             }
         }
         println!("Введите число от 1 до {}.", max);
+    }
+}
+
+fn ask_text_answer() -> Result<(String, bool)> {
+    loop {
+        print!("Ваш ответ: ");
+        flush_screen()?;
+
+        let (line, stop) = ask_line()?;
+        if stop {
+            return Ok((String::new(), true));
+        }
+        let line = line.trim();
+        if is_skip(line) {
+            return Ok((String::new(), false));
+        }
+
+        if !line.is_empty() {
+            return Ok((line.to_string(), false));
+        }
+
+        println!("Ответ не может быть пустым. Введите текст или !пропуск.");
     }
 }
 
@@ -226,91 +242,108 @@ fn run_interactive(cfg: &Config, test: Test, delay: Duration) -> Result<()> {
             println!("\nВопрос {} из {}", i + 1, n);
             println!("{}", "-".repeat(64));
 
-            if q.is_choice() {
+            let answer_type = if q.is_choice() {
                 if q.is_multiple_choice() {
                     println!("[ВЫБЕРИТЕ НЕСКОЛЬКО ОТВЕТОВ]");
+                    AnswerType::Multiple
                 } else {
                     println!("[ВЫБЕРИТЕ ОДИН ОТВЕТ]");
+                    AnswerType::Single
                 }
             } else {
                 println!("[ВВЕДИТЕ ТЕКСТОВЫЙ ОТВЕТ]");
-            }
+                AnswerType::Text
+            };
             println!("{}", q.text);
 
-            let (user_answer, correct) = if q.is_choice() {
-                let mut shuffled = q.options.clone();
-                shuffled.shuffle(&mut rng);
+            let (user_answer, correct) = match answer_type {
+                AnswerType::Single => {
+                    let mut shuffled = q.options.clone();
+                    shuffled.shuffle(&mut rng);
 
-                let correct_indices: Vec<usize> = q.correct_indices
-                    .iter()
-                    .map(|&original_idx| {
-                        shuffled.iter().position(|opt| *opt == q.options[original_idx]).unwrap()
-                    })
-                    .collect();
-
-                println!();
-                for (j, opt) in shuffled.iter().enumerate() {
-                    println!("  {}) {}", j + 1, opt);
-                }
-
-                println!();
-
-                let is_multiple = q.is_multiple_choice();
-
-                let (chosen_indices, stop) = if is_multiple {
-                    ask_multiple_choice(shuffled.len())?
-                } else {
-                    let (choice, stop) = ask_single_choice(shuffled.len())?;
-                    if choice >= 0 {
-                        (vec![choice as usize], stop)
-                    } else {
-                        (Vec::new(), stop)
-                    }
-                };
-
-                if stop {
-                    aborted = true;
-                    break;
-                }
-
-                if !chosen_indices.is_empty() {
-                    let answers: Vec<String> = chosen_indices
+                    let correct_indices: Vec<usize> = q.correct_indices
                         .iter()
-                        .map(|&idx| shuffled[idx].clone())
+                        .map(|&original_idx| {
+                            shuffled.iter().position(|opt| *opt == q.options[original_idx]).unwrap()
+                        })
                         .collect();
-                    let user_answer_str = answers.join(", ");
 
-                    let ok = if is_multiple {
+                    println!();
+                    for (j, opt) in shuffled.iter().enumerate() {
+                        println!("  {}) {}", j + 1, opt);
+                    }
+
+                    println!();
+
+                    let (choice, stop) = ask_single_choice(shuffled.len())?;
+                    if stop {
+                        aborted = true;
+                        break;
+                    }
+                    if choice >= 0 {
+                        let idx = choice as usize;
+                        let user_answer_str = shuffled[idx].clone();
+                        let ok = idx == correct_indices[0];
+                        (user_answer_str, ok)
+                    } else {
+                        ("(пропущено)".to_string(), false)
+                    }
+                }
+                AnswerType::Multiple => {
+                    let mut shuffled = q.options.clone();
+                    shuffled.shuffle(&mut rng);
+
+                    let correct_indices: Vec<usize> = q.correct_indices
+                        .iter()
+                        .map(|&original_idx| {
+                            shuffled.iter().position(|opt| *opt == q.options[original_idx]).unwrap()
+                        })
+                        .collect();
+
+                    println!();
+                    for (j, opt) in shuffled.iter().enumerate() {
+                        println!("  {}) {}", j + 1, opt);
+                    }
+
+                    println!();
+
+                    let (chosen_indices, stop) = ask_multiple_choice(shuffled.len())?;
+                    if stop {
+                        aborted = true;
+                        break;
+                    }
+
+                    if !chosen_indices.is_empty() {
+                        let answers: Vec<String> = chosen_indices
+                            .iter()
+                            .map(|&idx| shuffled[idx].clone())
+                            .collect();
+                        let user_answer_str = answers.join(", ");
+
                         let mut sorted_chosen = chosen_indices.clone();
                         let mut sorted_correct = correct_indices.clone();
                         sorted_chosen.sort();
                         sorted_correct.sort();
-                        sorted_chosen == sorted_correct
-                    } else {
-                        if let Some(&idx) = chosen_indices.first() {
-                            idx == correct_indices[0]
-                        } else {
-                            false
-                        }
-                    };
+                        let ok = sorted_chosen == sorted_correct;
 
-                    (user_answer_str, ok)
-                } else {
-                    ("(пропущено)".to_string(), false)
+                        (user_answer_str, ok)
+                    } else {
+                        ("(пропущено)".to_string(), false)
+                    }
                 }
-            } else {
-                let (line, stop) = ask_line()?;
-                if stop {
-                    aborted = true;
-                    break;
+                AnswerType::Text => {
+                    let (answer, stop) = ask_text_answer()?;
+                    if stop {
+                        aborted = true;
+                        break;
+                    }
+                    let ok = if answer.is_empty() {
+                        false
+                    } else {
+                        match_text(&answer, q)
+                    };
+                    (answer, ok)
                 }
-                let ans = line.trim().to_string();
-                let ok = if ans.is_empty() {
-                    false
-                } else {
-                    match_text(&ans, q)
-                };
-                (ans, ok)
             };
 
             if aborted {
@@ -373,6 +406,7 @@ fn run_interactive(cfg: &Config, test: Test, delay: Duration) -> Result<()> {
         }
     }
 }
+
 pub fn run(cfg: &Config) -> Result<()> {
     let delay = if cfg.result_delay.is_empty() {
         bail!("поле result_delay не может быть пустым");

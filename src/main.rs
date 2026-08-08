@@ -4,8 +4,9 @@ use anyhow::{Context, Result};
 
 mod config;
 mod dto;
-mod util;
+mod utils;
 mod cli;
+mod types;
 
 fn main() {
     if let Err(e) = run_app() {

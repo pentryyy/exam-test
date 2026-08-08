@@ -29,7 +29,7 @@ pub fn parse_questions(path: &str) -> anyhow::Result<Vec<Question>> {
             cur = Some(Question {
                 text,
                 options: Vec::new(),
-                correct_index: None,
+                correct_indices: Vec::new(),
                 correct_text: String::new(),
                 accept: Vec::new(),
                 line: line_no,
@@ -51,8 +51,23 @@ pub fn parse_questions(path: &str) -> anyhow::Result<Vec<Question>> {
             cur_ref.options.push(opt);
         } else if line.starts_with("correct:") {
             let val = line["correct:".len()..].trim();
-            if let Ok(n) = usize::from_str(val) {
-                cur_ref.correct_index = Some(n);
+
+            if val.starts_with('[') && val.ends_with(']') {
+                let inner = &val[1..val.len() - 1];
+                let indices: Vec<usize> = inner
+                    .split(',')
+                    .map(|s| s.trim())
+                    .filter(|s| !s.is_empty())
+                    .map(|s| usize::from_str(s))
+                    .collect::<Result<Vec<_>, _>>()
+                    .map_err(|e| anyhow!("строка {}: ошибка парсинга индексов: {}", line_no, e))?;
+
+                if indices.is_empty() {
+                    return Err(anyhow!("строка {}: массив correct не может быть пустым", line_no));
+                }
+                cur_ref.correct_indices = indices;
+            } else if let Ok(n) = usize::from_str(val) {
+                cur_ref.correct_indices = vec![n];
             } else {
                 cur_ref.correct_text = unquote(val);
             }
@@ -82,7 +97,13 @@ pub fn parse_questions(path: &str) -> anyhow::Result<Vec<Question>> {
             return Err(anyhow!("строка {}: пустой текст вопроса", q.line));
         }
         if q.is_choice() {
-            if let Some(idx) = q.correct_index {
+            if q.correct_indices.is_empty() {
+                return Err(anyhow!(
+                    "строка {}: для вопроса с вариантами не указан correct индекс(ы)",
+                    q.line
+                ));
+            }
+            for &idx in &q.correct_indices {
                 if idx >= q.options.len() {
                     return Err(anyhow!(
                         "строка {}: correct={} вне диапазона вариантов ({})",
@@ -91,11 +112,6 @@ pub fn parse_questions(path: &str) -> anyhow::Result<Vec<Question>> {
                         q.options.len()
                     ));
                 }
-            } else {
-                return Err(anyhow!(
-                    "строка {}: для вопроса с вариантами не указан correct индекс",
-                    q.line
-                ));
             }
         } else if q.correct_text.is_empty() {
             return Err(anyhow!(

@@ -10,6 +10,11 @@ use crate::dto::test::Test;
 use crate::util::question_parser::parse_questions;
 use crate::util::text_matcher::match_text;
 
+fn flush_console() -> Result<()>{
+    io::stdout().flush()?;
+    Ok(())
+}
+
 fn clear_screen() {
     if cfg!(target_os = "windows") {
         let _ = Command::new("cmd").args(["/c", "cls"]).status();
@@ -63,10 +68,61 @@ fn wait_for_start() -> Result<bool> {
     }
 }
 
-fn ask_choice(max: usize) -> Result<(i32, bool)> {
+fn ask_multiple_choice(max: usize) -> Result<(Vec<usize>, bool)> {
+    loop {
+        print!("Ваши ответы: ");
+        flush_console()?;
+        let (line, stop) = ask_line()?;
+        if stop {
+            return Ok((Vec::new(), true));
+        }
+        let line = line.trim();
+        if is_skip(line) {
+            return Ok((Vec::new(), false));
+        }
+
+        if let Ok(num) = line.parse::<usize>() {
+            if num >= 1 && num <= max {
+                return Ok((vec![num - 1], false));
+            }
+        }
+
+        let mut indices = Vec::new();
+        let parts: Vec<&str> = line.split(',').collect();
+        let mut valid = true;
+
+        for part in parts {
+            let trimmed = part.trim();
+            if trimmed.is_empty() {
+                continue;
+            }
+            if let Ok(num) = trimmed.parse::<usize>() {
+                if num >= 1 && num <= max {
+                    if !indices.contains(&(num - 1)) {
+                        indices.push(num - 1);
+                    }
+                } else {
+                    valid = false;
+                    break;
+                }
+            } else {
+                valid = false;
+                break;
+            }
+        }
+
+        if valid && !indices.is_empty() {
+            indices.sort();
+            return Ok((indices, false));
+        }
+        println!("Введите корректные номера от 1 до {} через запятую.", max);
+    }
+}
+
+fn ask_single_choice(max: usize) -> Result<(i32, bool)> {
     loop {
         print!("Ваш ответ (1-{}): ", max);
-        io::stdout().flush()?;
+        flush_console()?;
         let (line, stop) = ask_line()?;
         if stop {
             return Ok((0, true));
@@ -93,6 +149,7 @@ fn print_header(pool: usize, n: usize) {
         pool, n
     );
     println!("Для вопросов с вариантами введите номер варианта.");
+    println!("Для вопросов с множественным выбором введите номера через запятую.");
     println!("Команды: !пропуск — пропустить вопрос, !выход — завершить тест досрочно, !старт - для начала теста.");
 }
 
@@ -120,7 +177,7 @@ fn print_report(cfg: &Config, results: &[AnswerResult], planned: usize, aborted:
 
     let total = planned;
     if aborted {
-        println!("Тест прерван: отвечено {} из {} вопросов.", total, planned);
+        println!("Тест прерван: отвечено {} из {} вопросов.", results.len(), planned);
     }
     let percent = right as f64 / total as f64 * 100.0;
 
@@ -178,25 +235,62 @@ fn run_interactive(cfg: &Config, test: Test, delay: Duration) -> Result<()> {
             let (user_answer, correct) = if q.is_choice() {
                 let mut shuffled = q.options.clone();
                 shuffled.shuffle(&mut rng);
-                let correct_pos = shuffled
+
+                let correct_indices: Vec<usize> = q.correct_indices
                     .iter()
-                    .position(|opt| *opt == q.options[q.correct_index.unwrap()])
-                    .unwrap();
+                    .map(|&original_idx| {
+                        shuffled.iter().position(|opt| *opt == q.options[original_idx]).unwrap()
+                    })
+                    .collect();
 
                 println!();
                 for (j, opt) in shuffled.iter().enumerate() {
                     println!("  {}) {}", j + 1, opt);
                 }
-                let (choice, stop) = ask_choice(shuffled.len())?;
+
+                let is_multiple = q.is_multiple_choice();
+                if is_multiple {
+                    println!("(выберите один или несколько вариантов через запятую)");
+                }
+
+                let (chosen_indices, stop) = if is_multiple {
+                    ask_multiple_choice(shuffled.len())?
+                } else {
+                    let (choice, stop) = ask_single_choice(shuffled.len())?;
+                    if choice >= 0 {
+                        (vec![choice as usize], stop)
+                    } else {
+                        (Vec::new(), stop)
+                    }
+                };
+
                 if stop {
                     aborted = true;
                     break;
                 }
-                if choice >= 0 {
-                    let idx = choice as usize;
-                    let ans = shuffled[idx].clone();
-                    let ok = idx == correct_pos;
-                    (ans, ok)
+
+                if !chosen_indices.is_empty() {
+                    let answers: Vec<String> = chosen_indices
+                        .iter()
+                        .map(|&idx| shuffled[idx].clone())
+                        .collect();
+                    let user_answer_str = answers.join(", ");
+
+                    let ok = if is_multiple {
+                        let mut sorted_chosen = chosen_indices.clone();
+                        let mut sorted_correct = correct_indices.clone();
+                        sorted_chosen.sort();
+                        sorted_correct.sort();
+                        sorted_chosen == sorted_correct
+                    } else {
+                        if let Some(&idx) = chosen_indices.first() {
+                            idx == correct_indices[0]
+                        } else {
+                            false
+                        }
+                    };
+
+                    (user_answer_str, ok)
                 } else {
                     ("(пропущено)".to_string(), false)
                 }
@@ -259,7 +353,7 @@ fn run_interactive(cfg: &Config, test: Test, delay: Duration) -> Result<()> {
 
         loop {
             print!("\nВведите !рестарт для повторного теста или !выход для выхода: ");
-            io::stdout().flush()?;
+            flush_console()?;
             let (line, stop) = ask_line()?;
             if stop {
                 return Ok(());

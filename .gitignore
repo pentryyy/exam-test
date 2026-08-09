@@ -12,7 +12,7 @@ coverage.*
 profile.cov
 
 # Build directory
- target/
+target/
 
 # env file
 .env

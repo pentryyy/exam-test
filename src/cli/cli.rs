@@ -10,6 +10,8 @@ use std::time::Duration;
 use crate::types::console_operation_type::ConsoleOperation;
 use crate::utils::console_print::{print_header, print_report};
 
+type ShouldStopTest = bool;
+
 pub struct CliApp<'a> {
     cfg: &'a Config,
 }
@@ -38,7 +40,7 @@ impl<'a> CliApp<'a> {
         self.run_interactive(&cfg_tests.exam_subject, cli_tests, delay)
     }
 
-    fn wait_for_start(&self) -> Result<bool> {
+    fn wait_for_start(&self) -> Result<ShouldStopTest> {
         loop {
             flush_screen()?;
 
@@ -61,7 +63,7 @@ impl<'a> CliApp<'a> {
         index: usize,
         total: usize,
         rng: &mut rand::rngs::ThreadRng,
-    ) -> Result<(AnswerResult, bool)> {
+    ) -> Result<(AnswerResult, ShouldStopTest)> {
         println!("\nВопрос {} из {}", index + 1, total);
         println!("{}", "-".repeat(64));
 
@@ -95,7 +97,7 @@ impl<'a> CliApp<'a> {
         Ok((result, false))
     }
 
-    fn handle_restart_prompt(&self) -> Result<bool> {
+    fn handle_restart_prompt(&self) -> Result<ShouldStopTest> {
         loop {
             print!("\nВведите !рестарт для повторного теста или !выход для выхода: ");
             flush_screen()?;

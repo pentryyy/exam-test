@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use std::fs;
 
@@ -30,58 +30,10 @@ impl Config {
         let mut cfg: Config = serde_yaml::from_str(&data)
             .with_context(|| format!("ошибка парсинга конфига {:?}", CONFIG_PATH))?;
 
-        cfg.validate()?;
-
         cfg.grades
             .sort_by(|a, b| b.threshold.partial_cmp(&a.threshold).unwrap());
 
         Ok(cfg)
-    }
-
-    fn validate(&self) -> Result<()> {
-        if self.grades.is_empty() {
-            return Err(anyhow!("в конфиге не задано ни одного порога оценки"));
-        }
-
-        for (i, grade) in self.grades.iter().enumerate() {
-            if grade.label.is_empty() {
-                return Err(anyhow!(
-                    "порог #{}: не задана метка (label)",
-                    i
-                ));
-            }
-            if !(0.0..=100.0).contains(&grade.threshold) {
-                return Err(anyhow!(
-                    "порог #{} ({:?}): значение {} вне диапазона [0, 100]",
-                    i,
-                    grade.label,
-                    grade.threshold
-                ));
-            }
-        }
-
-        if self.test_path.is_empty() {
-            return Err(anyhow!("поле test_path не задано"));
-        }
-
-        if self.test_count <= 0 {
-            return Err(anyhow!(
-                "поле test_count должно быть больше нуля (текущее {})",
-                self.test_count
-            ));
-        }
-
-        if self.result_delay.is_empty() {
-            return Err(anyhow!("поле result_delay не задано"));
-        }
-
-        humantime::parse_duration(&self.result_delay)
-            .map_err(|_| anyhow!(
-                "некорректное значение result_delay={:?} (ожидается время, например 500ms)",
-                self.result_delay
-            ))?;
-
-        Ok(())
     }
 }
 

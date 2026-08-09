@@ -1,8 +1,9 @@
-use rand::prelude::SliceRandom;
 use crate::dto::test::CfgTest;
 use crate::types::answer_type::{AnswerKind, AnswerType};
 use crate::utils::input_handler::{ask_multiple_choice, ask_single_choice, ask_text_input};
 use crate::utils::text_matcher::match_text;
+use anyhow::Result;
+use rand::prelude::SliceRandom;
 
 fn prepare_shuffled_options(q: &CfgTest, rng: &mut rand::rngs::ThreadRng) -> (Vec<String>, Vec<usize>) {
     let original_correct_indices: Vec<usize> = match &q.correct {
@@ -38,7 +39,7 @@ fn display_options(shuffled: &[String]) {
     println!();
 }
 
-fn process_single_choice(shuffled: Vec<String>, correct_indices: Vec<usize>) -> anyhow::Result<(String, bool, bool)> {
+fn process_single_choice(shuffled: Vec<String>, correct_indices: Vec<usize>) -> Result<(String, bool, bool)> {
     let (choice, stop) = ask_single_choice(shuffled.len())?;
     if stop {
         return Ok((String::new(), false, true));
@@ -53,7 +54,7 @@ fn process_single_choice(shuffled: Vec<String>, correct_indices: Vec<usize>) -> 
     }
 }
 
-fn process_multiple_choice(shuffled: Vec<String>, correct_indices: Vec<usize>) -> anyhow::Result<(String, bool, bool)> {
+fn process_multiple_choice(shuffled: Vec<String>, correct_indices: Vec<usize>) -> Result<(String, bool, bool)> {
     let (chosen_indices, stop) = ask_multiple_choice(shuffled.len())?;
     if stop {
         return Ok((String::new(), false, true));
@@ -78,7 +79,20 @@ fn process_multiple_choice(shuffled: Vec<String>, correct_indices: Vec<usize>) -
     }
 }
 
-pub fn handle_answer(test: &CfgTest, rng: &mut rand::rngs::ThreadRng) -> anyhow::Result<(String, bool, bool)> {
+fn process_text_answer(test: &CfgTest) -> Result<(String, bool, bool)> {
+    let (answer, stop) = ask_text_input()?;
+    if stop {
+        return Ok((String::new(), false, true));
+    }
+    let ok = if answer.is_empty() {
+        false
+    } else {
+        match_text(&answer, test)
+    };
+    Ok((answer, ok, false))
+}
+
+pub fn handle_answer(test: &CfgTest, rng: &mut rand::rngs::ThreadRng) -> Result<(String, bool, bool)> {
     let answer_type = test.get_answer_type();
     println!("{}", test.question);
 
@@ -93,17 +107,6 @@ pub fn handle_answer(test: &CfgTest, rng: &mut rand::rngs::ThreadRng) -> anyhow:
             display_options(&shuffled);
             process_multiple_choice(shuffled, correct_indices)
         }
-        AnswerKind::TextAnswer => {
-            let (answer, stop) = ask_text_input()?;
-            if stop {
-                return Ok((String::new(), false, true));
-            }
-            let ok = if answer.is_empty() {
-                false
-            } else {
-                match_text(&answer, test)
-            };
-            Ok((answer, ok, false))
-        }
+        AnswerKind::TextAnswer => process_text_answer(test),
     }
 }

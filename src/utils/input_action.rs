@@ -5,6 +5,25 @@ use crate::utils::text_matcher::match_text;
 use anyhow::Result;
 use rand::prelude::SliceRandom;
 
+pub fn handle_answer(test: &CfgTest, rng: &mut rand::rngs::ThreadRng) -> Result<(String, bool, bool)> {
+    let answer_type = test.get_answer_type();
+    println!("{}", test.question);
+
+    match answer_type {
+        AnswerKind::SingleAnswer => {
+            let (shuffled, correct_indices) = prepare_shuffled_options(test, rng);
+            display_options(&shuffled);
+            process_single_choice(shuffled, correct_indices)
+        }
+        AnswerKind::MultipleAnswer => {
+            let (shuffled, correct_indices) = prepare_shuffled_options(test, rng);
+            display_options(&shuffled);
+            process_multiple_choice(shuffled, correct_indices)
+        }
+        AnswerKind::TextAnswer => process_text_answer(test),
+    }
+}
+
 fn prepare_shuffled_options(q: &CfgTest, rng: &mut rand::rngs::ThreadRng) -> (Vec<String>, Vec<usize>) {
     let original_correct_indices: Vec<usize> = match &q.correct {
         AnswerType::SingleAnswer(idx) => vec![*idx],
@@ -92,21 +111,3 @@ fn process_text_answer(test: &CfgTest) -> Result<(String, bool, bool)> {
     Ok((answer, ok, false))
 }
 
-pub fn handle_answer(test: &CfgTest, rng: &mut rand::rngs::ThreadRng) -> Result<(String, bool, bool)> {
-    let answer_type = test.get_answer_type();
-    println!("{}", test.question);
-
-    match answer_type {
-        AnswerKind::SingleAnswer => {
-            let (shuffled, correct_indices) = prepare_shuffled_options(test, rng);
-            display_options(&shuffled);
-            process_single_choice(shuffled, correct_indices)
-        }
-        AnswerKind::MultipleAnswer => {
-            let (shuffled, correct_indices) = prepare_shuffled_options(test, rng);
-            display_options(&shuffled);
-            process_multiple_choice(shuffled, correct_indices)
-        }
-        AnswerKind::TextAnswer => process_text_answer(test),
-    }
-}

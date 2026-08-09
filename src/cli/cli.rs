@@ -90,11 +90,7 @@ impl<'a> CliApp<'a> {
             correct,
         };
 
-        if correct {
-            println!("\tВерно");
-        } else {
-            println!("\tНеверно");
-        }
+        result.log_answer();
 
         Ok((result, false))
     }

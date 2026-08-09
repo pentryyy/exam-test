@@ -35,7 +35,7 @@ impl<'a> CliApp<'a> {
             count: self.cfg.test_count,
         };
 
-        self.run_interactive(cli_tests, delay)
+        self.run_interactive(&cfg_tests.exam_subject, cli_tests, delay)
     }
 
     fn wait_for_start(&self) -> Result<bool> {
@@ -113,7 +113,7 @@ impl<'a> CliApp<'a> {
         }
     }
 
-    fn run_interactive(&self, test: CliTests, delay: Duration) -> Result<()> {
+    fn run_interactive(&self, subject: &str, test: CliTests, delay: Duration) -> Result<()> {
         let mut rng = rand::thread_rng();
         let mut first_run = true;
 
@@ -121,7 +121,7 @@ impl<'a> CliApp<'a> {
             let n = test.count.min(test.questions.len());
 
             if first_run {
-                print_header(test.questions.len(), n);
+                print_header(subject, test.questions.len(), n);
                 if !self.wait_for_start()? {
                     return Ok(());
                 }

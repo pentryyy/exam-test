@@ -20,6 +20,8 @@ pub struct CfgTest {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CfgTests {
+    #[serde(default)]
+    pub exam_subject: String,
     pub questions: Vec<CfgTest>,
 }
 

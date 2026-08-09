@@ -9,9 +9,9 @@ pub fn progress_bar(percent: f64) -> String {
     format!("[{}{}]", "#".repeat(filled), ".".repeat(empty))
 }
 
-pub fn print_header(pool: usize, n: usize) {
+pub fn print_header(subject: &str, pool: usize, n: usize) {
     println!("{}", "=".repeat(64));
-    println!("ТЕСТ ЭКЗАМЕНА");
+    println!("ТЕСТ ЭКЗАМЕНА {}", subject);
     println!("{}", "=".repeat(64));
     println!(
         "Вопросов в базе: {}. В тесте: {} (выбраны случайно).",

@@ -40,7 +40,7 @@ impl CfgTest {
         }
     }
 
-    pub fn get_answer_type(&self) -> AnswerKind {
+    pub fn get_answer_kind(&self) -> AnswerKind {
         self.log_answer_type();
         self.correct.kind()
     }

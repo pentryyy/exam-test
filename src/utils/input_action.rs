@@ -6,7 +6,7 @@ use anyhow::Result;
 use rand::prelude::SliceRandom;
 
 pub fn handle_answer(test: &CfgTest, rng: &mut rand::rngs::ThreadRng) -> Result<(String, bool, bool)> {
-    let answer_type = test.get_answer_type();
+    let answer_type = test.get_answer_kind();
     println!("{}", test.question);
 
     match answer_type {

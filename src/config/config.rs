@@ -1,8 +1,18 @@
 use anyhow::{Context, Result};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use std::fs;
+use std::time::Duration;
 
 pub const CONFIG_PATH: &str = "config/config.yaml";
+
+fn deserialize_duration<'de, D>(deserializer: D) -> Result<Duration, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s = String::deserialize(deserializer)?;
+    humantime::parse_duration(&s)
+        .map_err(|e| serde::de::Error::custom(format!("некорректное значение result_delay={:?}: {}", s, e)))
+}
 
 pub trait Grader {
     fn grade(&self, percent: f64) -> String;
@@ -19,7 +29,8 @@ pub struct Config {
     pub grades: Vec<GradeThreshold>,
     pub test_path: String,
     pub test_count: usize,
-    pub result_delay: String,
+    #[serde(deserialize_with = "deserialize_duration")]
+    pub result_delay: Duration,
 }
 
 impl Config {

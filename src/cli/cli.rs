@@ -1,14 +1,14 @@
 use crate::config::config::Config;
 use crate::dto::answer_result::AnswerResult;
 use crate::dto::test::{CfgTest, CfgTests, CliTests};
+use crate::types::console_operation_type::ConsoleOperation;
 use crate::utils::console_clear::{clear_screen, flush_screen};
+use crate::utils::console_print::{print_header, print_report};
 use crate::utils::input_action::handle_answer;
 use crate::utils::input_handler::ask_line;
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result};
 use rand::prelude::SliceRandom;
 use std::time::Duration;
-use crate::types::console_operation_type::ConsoleOperation;
-use crate::utils::console_print::{print_header, print_report};
 
 type ShouldStopTest = bool;
 
@@ -22,13 +22,6 @@ impl<'a> CliApp<'a> {
     }
 
     pub fn run(&self) -> Result<()> {
-        let delay = if self.cfg.result_delay.is_empty() {
-            bail!("поле result_delay не может быть пустым");
-        } else {
-            humantime::parse_duration(&self.cfg.result_delay)
-                .with_context(|| format!("некорректное значение result_delay={:?}", self.cfg.result_delay))?
-        };
-
         let cfg_tests = CfgTests::load(&self.cfg.test_path)
             .with_context(|| format!("ошибка чтения вопросов из файла {:?}", self.cfg.test_path))?;
 
@@ -37,7 +30,7 @@ impl<'a> CliApp<'a> {
             count: self.cfg.test_count,
         };
 
-        self.run_interactive(&cfg_tests.exam_subject, cli_tests, delay)
+        self.run_interactive(&cfg_tests.exam_subject, cli_tests, self.cfg.result_delay)
     }
 
     fn wait_for_start(&self) -> Result<ShouldStopTest> {

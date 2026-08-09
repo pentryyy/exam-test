@@ -4,6 +4,10 @@ use std::fs;
 
 pub const CONFIG_PATH: &str = "config/config.yaml";
 
+pub trait Grader {
+    fn grade(&self, percent: f64) -> String;
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GradeThreshold {
     pub threshold: f64,
@@ -79,8 +83,10 @@ impl Config {
 
         Ok(())
     }
+}
 
-    pub fn grade(&self, p: f64) -> String {
+impl Grader for Config {
+    fn grade(&self, p: f64) -> String {
         if self.grades.is_empty() {
             return "ошибка: конфиг пуст".to_string();
         }

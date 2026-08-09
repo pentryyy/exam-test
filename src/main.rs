@@ -1,11 +1,12 @@
-use crate::cli::cli::run;
+use crate::cli::cli::CliApp;
 use crate::config::config::Config;
 use anyhow::{Context, Result};
 
 mod config;
 mod dto;
-mod util;
+mod utils;
 mod cli;
+mod types;
 
 fn main() {
     if let Err(e) = run_app() {
@@ -16,6 +17,7 @@ fn main() {
 
 fn run_app() -> Result<()> {
     let cfg = Config::load().context("Ошибка загрузки конфига")?;
-    run(&cfg).context("Ошибка запуска тестов")?;
+    let app = CliApp::new(&cfg);
+    app.run().context("Ошибка запуска тестов")?;
     Ok(())
 }

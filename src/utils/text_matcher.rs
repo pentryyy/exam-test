@@ -1,14 +1,20 @@
-use crate::dto::question::Question;
+use crate::dto::test::CfgTest;
+use crate::types::answer_type::AnswerType;
 
-pub fn match_text(user: &str, q: &Question) -> bool {
+pub fn match_text(user: &str, test: &CfgTest) -> bool {
     let nu = normalize(user);
     if nu.is_empty() {
         return false;
     }
 
-    let mut variants = Vec::with_capacity(1 + q.accept.len());
-    variants.push(q.correct_text.clone());
-    variants.extend(q.accept.clone());
+    let correct_text = match &test.correct {
+        AnswerType::TextAnswer(text) => text.clone(),
+        _ => return false,
+    };
+
+    let mut variants = Vec::with_capacity(1 + test.accept.len());
+    variants.push(correct_text);
+    variants.extend(test.accept.clone());
 
     for v in variants {
         let nv = normalize(&v);

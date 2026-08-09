@@ -1,11 +1,9 @@
 use crate::config::config::Config;
 use crate::dto::answer_result::AnswerResult;
-use crate::dto::question::Question;
-use crate::dto::test::Test;
+use crate::dto::test::{CfgTest, CfgTests, CliTests};
 use crate::utils::console_clear::{clear_screen, flush_screen};
 use crate::utils::input_action::handle_answer;
 use crate::utils::input_handler::ask_line;
-use crate::utils::question_parser::parse_questions;
 use anyhow::{bail, Context, Result};
 use rand::prelude::SliceRandom;
 use std::time::Duration;
@@ -29,15 +27,15 @@ impl<'a> CliApp<'a> {
                 .with_context(|| format!("некорректное значение result_delay={:?}", self.cfg.result_delay))?
         };
 
-        let pool = parse_questions(&self.cfg.test_path)
+        let cfg_tests = CfgTests::load(&self.cfg.test_path)
             .with_context(|| format!("ошибка чтения вопросов из файла {:?}", self.cfg.test_path))?;
 
-        let test = Test {
-            questions: pool,
+        let cli_tests = CliTests {
+            questions: cfg_tests.questions,
             count: self.cfg.test_count,
         };
 
-        self.run_interactive(test, delay)
+        self.run_interactive(cli_tests, delay)
     }
 
     fn wait_for_start(&self) -> Result<bool> {
@@ -59,7 +57,7 @@ impl<'a> CliApp<'a> {
 
     fn handle_question(
         &self,
-        q: &Question,
+        test: &CfgTest,
         index: usize,
         total: usize,
         rng: &mut rand::rngs::ThreadRng,
@@ -67,16 +65,16 @@ impl<'a> CliApp<'a> {
         println!("\nВопрос {} из {}", index + 1, total);
         println!("{}", "-".repeat(64));
 
-        let (user_answer, correct) = handle_answer(q, rng)?;
+        let (user_answer, correct, skipped) = handle_answer(test, rng)?;
 
-        if user_answer.is_empty() && !correct {
+        if skipped {
             return Ok((
                 AnswerResult {
-                    question: q.clone(),
+                    question: test.clone(),
                     user_answer: "(пропущено)".to_string(),
                     correct: false,
                 },
-                true, // true = пропущено/прервано
+                true,
             ));
         }
 
@@ -87,15 +85,15 @@ impl<'a> CliApp<'a> {
         };
 
         let result = AnswerResult {
-            question: q.clone(),
+            question: test.clone(),
             user_answer: display.to_string(),
             correct,
         };
 
         if correct {
-            println!("  Верно");
+            println!("\tВерно");
         } else {
-            println!("  Неверно");
+            println!("\tНеверно");
         }
 
         Ok((result, false))
@@ -119,7 +117,7 @@ impl<'a> CliApp<'a> {
         }
     }
 
-    fn run_interactive(&self, test: Test, delay: Duration) -> Result<()> {
+    fn run_interactive(&self, test: CliTests, delay: Duration) -> Result<()> {
         let mut rng = rand::thread_rng();
         let mut first_run = true;
 
@@ -135,19 +133,20 @@ impl<'a> CliApp<'a> {
                 clear_screen()?;
             }
 
-            let mut selected: Vec<Question> = test.questions.clone();
-            selected.shuffle(&mut rng);
-            selected.truncate(n);
+            let mut indices: Vec<usize> = (0..test.questions.len()).collect();
+            indices.shuffle(&mut rng);
+            let selected_indices = &indices[0..n];
 
             let mut results = Vec::with_capacity(n);
             let mut aborted = false;
 
-            for (i, q) in selected.iter().enumerate() {
+            for (i, &idx) in selected_indices.iter().enumerate() {
                 if i > 0 {
                     clear_screen()?;
                 }
 
-                let (result, skipped) = self.handle_question(q, i, n, &mut rng)?;
+                let question = &test.questions[idx];
+                let (result, skipped) = self.handle_question(question, i, n, &mut rng)?;
                 results.push(result);
 
                 if skipped {

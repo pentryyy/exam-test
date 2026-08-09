@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum AnswerKind {
     SingleAnswer,
@@ -5,7 +7,8 @@ pub enum AnswerKind {
     TextAnswer,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
 pub enum AnswerType {
     SingleAnswer(usize),
     MultipleAnswer(Vec<usize>),

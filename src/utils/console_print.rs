@@ -57,7 +57,7 @@ pub fn print_report<G: Grader>(
     println!("\nНеверно отвеченные вопросы ({}):", wrong.len());
     for (i, r) in wrong.iter().enumerate() {
         println!("{}", "-".repeat(64));
-        println!("{}. {}", i + 1, r.question.text);
+        println!("{}. {}", i + 1, r.question.question);
         println!("   Ваш ответ:        {}", r.user_answer);
         println!("   Правильный ответ: {}", r.question.correct_answer_string());
     }

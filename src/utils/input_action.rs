@@ -27,7 +27,7 @@ pub fn handle_answer(test: &CfgTest, rng: &mut rand::rngs::ThreadRng) -> Result<
 fn prepare_shuffled_options(q: &CfgTest, rng: &mut rand::rngs::ThreadRng) -> (Vec<String>, Vec<usize>) {
     let original_correct_indices: Vec<usize> = match &q.correct {
         AnswerType::SingleAnswer(idx) => vec![*idx],
-        AnswerType::MultipleAnswer(indices) => indices.clone(),
+        AnswerType::MultipleAnswer(indices) => indices.iter().copied().collect(),
         AnswerType::TextAnswer(_) => return (q.options.iter().map(|opt| opt.answer.clone()).collect(), Vec::new()),
     };
 

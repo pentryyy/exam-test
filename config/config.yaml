@@ -9,5 +9,5 @@ grades:
     label: "неудовлетворительно"
 
 test_path: "test/philosophy/questions.yaml"
-test_count: 30
+test_count: 50
 result_delay: "500ms"

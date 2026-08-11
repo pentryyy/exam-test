@@ -228,10 +228,4 @@ mod tests {
         let test = TestCfgTest::multiple_answer();
         assert!(!match_text("что угодно", &test.to_cfg_test()));
     }
-
-    #[test]
-    fn match_text_fail() {
-        let test = TestCfgTest::text_answer("правильный", vec![]);
-        assert!(match_text("неправильно", &test.to_cfg_test())); // всегда false, тест упадёт
-    }
 }

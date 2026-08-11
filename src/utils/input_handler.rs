@@ -1,6 +1,6 @@
 use crate::types::console_operation_type::ConsoleOperation;
 use anyhow::Result;
-use std::io::{stdin, stdout, BufRead, BufReader, Write};
+use std::io::{BufRead, BufReader, Write, stdin, stdout};
 
 pub fn ask_line() -> Result<(String, bool)> {
     let mut input = BufReader::new(stdin());
@@ -135,7 +135,10 @@ pub fn ask_text_input_from<R: BufRead, W: Write>(
                 if !line.is_empty() {
                     return Ok((line.to_string(), false));
                 }
-                writeln!(output, "Ответ не может быть пустым. Введите текст или !пропуск.")?;
+                writeln!(
+                    output,
+                    "Ответ не может быть пустым. Введите текст или !пропуск."
+                )?;
                 output.flush()?;
             }
         }

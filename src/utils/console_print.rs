@@ -10,7 +10,12 @@ pub fn progress_bar(percent: f64) -> String {
     format!("[{}{}]", "#".repeat(filled), ".".repeat(empty))
 }
 
-pub fn print_header_to<W: Write>(output: &mut W, subject: &str, pool: usize, n: usize) -> io::Result<()> {
+pub fn print_header_to<W: Write>(
+    output: &mut W,
+    subject: &str,
+    pool: usize,
+    n: usize,
+) -> io::Result<()> {
     writeln!(output, "{}", "=".repeat(64))?;
     writeln!(output, "ТЕСТ ЭКЗАМЕНА {}", subject)?;
     writeln!(output, "{}", "=".repeat(64))?;
@@ -19,7 +24,10 @@ pub fn print_header_to<W: Write>(output: &mut W, subject: &str, pool: usize, n: 
         "Вопросов в базе: {}. В тесте: {} (выбраны случайно).",
         pool, n
     )?;
-    writeln!(output, "Команды: !пропуск — пропустить вопрос, !выход — завершить тест досрочно, !старт - для начала теста.")?;
+    writeln!(
+        output,
+        "Команды: !пропуск — пропустить вопрос, !выход — завершить тест досрочно, !старт - для начала теста."
+    )?;
     Ok(())
 }
 
@@ -50,12 +58,22 @@ pub fn print_report_to<W: Write, G: Grader>(
 
     let total = planned;
     if aborted {
-        writeln!(output, "Тест прерван: отвечено {} из {} вопросов.", results.len(), planned)?;
+        writeln!(
+            output,
+            "Тест прерван: отвечено {} из {} вопросов.",
+            results.len(),
+            planned
+        )?;
     }
     let percent = right as f64 / total as f64 * 100.0;
 
     writeln!(output, "Правильных ответов: {} из {}", right, total)?;
-    writeln!(output, "Результат: {:.1}% — {}", percent, grader.grade(percent))?;
+    writeln!(
+        output,
+        "Результат: {:.1}% — {}",
+        percent,
+        grader.grade(percent)
+    )?;
     writeln!(output, "{}", progress_bar(percent))?;
 
     if wrong.is_empty() {
@@ -68,7 +86,11 @@ pub fn print_report_to<W: Write, G: Grader>(
         writeln!(output, "{}", "-".repeat(64))?;
         writeln!(output, "{}. {}", i + 1, r.question.question)?;
         writeln!(output, "   Ваш ответ:        {}", r.user_answer)?;
-        writeln!(output, "   Правильный ответ: {}", r.question.correct_answer_string())?;
+        writeln!(
+            output,
+            "   Правильный ответ: {}",
+            r.question.correct_answer_string()
+        )?;
     }
     writeln!(output, "{}", "-".repeat(64))?;
     Ok(())
@@ -84,7 +106,6 @@ pub fn print_report<G: Grader>(
     let _ = print_report_to(&mut stdout, results, planned, aborted, grader);
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -93,30 +114,66 @@ mod tests {
 
     #[test]
     fn progress_bar_0_percent() {
-        assert_eq!(progress_bar(0.0), "[........................................]");
+        assert_eq!(
+            progress_bar(0.0),
+            "[........................................]"
+        );
     }
 
     #[test]
     fn progress_bar_50_percent() {
-        assert_eq!(progress_bar(50.0), "[####################....................]");
+        assert_eq!(
+            progress_bar(50.0),
+            "[####################....................]"
+        );
     }
 
     #[test]
     fn progress_bar_100_percent() {
-        assert_eq!(progress_bar(100.0), "[########################################]");
+        assert_eq!(
+            progress_bar(100.0),
+            "[########################################]"
+        );
     }
 
     #[test]
     fn progress_bar_rounding() {
-        assert_eq!(progress_bar(42.5), "[#################.......................]");
-        assert_eq!(progress_bar(42.4), "[#################.......................]");
-        assert_eq!(progress_bar(42.49), "[#################.......................]");
-        assert_eq!(progress_bar(42.5), "[#################.......................]");
-        assert_eq!(progress_bar(42.51), "[#################.......................]");
-        assert_eq!(progress_bar(42.99), "[#################.......................]");
-        assert_eq!(progress_bar(43.0), "[#################.......................]");
-        assert_eq!(progress_bar(43.1), "[#################.......................]");
-        assert_eq!(progress_bar(43.75), "[##################......................]");
+        assert_eq!(
+            progress_bar(42.5),
+            "[#################.......................]"
+        );
+        assert_eq!(
+            progress_bar(42.4),
+            "[#################.......................]"
+        );
+        assert_eq!(
+            progress_bar(42.49),
+            "[#################.......................]"
+        );
+        assert_eq!(
+            progress_bar(42.5),
+            "[#################.......................]"
+        );
+        assert_eq!(
+            progress_bar(42.51),
+            "[#################.......................]"
+        );
+        assert_eq!(
+            progress_bar(42.99),
+            "[#################.......................]"
+        );
+        assert_eq!(
+            progress_bar(43.0),
+            "[#################.......................]"
+        );
+        assert_eq!(
+            progress_bar(43.1),
+            "[#################.......................]"
+        );
+        assert_eq!(
+            progress_bar(43.75),
+            "[##################......................]"
+        );
     }
 
     #[test]
@@ -178,10 +235,7 @@ mod tests {
     #[test]
     fn print_report_to_with_all_correct() {
         let mut output = Vec::new();
-        let results = vec![
-            make_result("Q1", "A", true),
-            make_result("Q2", "B", true),
-        ];
+        let results = vec![make_result("Q1", "A", true), make_result("Q2", "B", true)];
         let grader = MockGrader;
         print_report_to(&mut output, &results, 2, false, &grader).unwrap();
         let out = String::from_utf8(output).unwrap();
@@ -211,9 +265,7 @@ mod tests {
     #[test]
     fn print_report_to_with_aborted() {
         let mut output = Vec::new();
-        let results = vec![
-            make_result("Q1", "A", true),
-        ];
+        let results = vec![make_result("Q1", "A", true)];
         let grader = MockGrader;
         print_report_to(&mut output, &results, 5, true, &grader).unwrap();
         let out = String::from_utf8(output).unwrap();

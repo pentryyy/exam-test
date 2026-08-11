@@ -1,13 +1,18 @@
 use crate::dto::test::CfgTest;
 use crate::types::answer_type::{AnswerKind, AnswerType};
-use crate::utils::input_handler::{ask_multiple_choice_from, ask_single_choice_from, ask_text_input_from};
+use crate::utils::input_handler::{
+    ask_multiple_choice_from, ask_single_choice_from, ask_text_input_from,
+};
 use crate::utils::text_matcher::match_text;
 use anyhow::Result;
-use rand::prelude::SliceRandom;
-use std::io::{stdin, stdout, BufRead, BufReader, Write};
 use rand::Rng;
+use rand::prelude::SliceRandom;
+use std::io::{BufRead, BufReader, Write, stdin, stdout};
 
-pub fn handle_answer(test: &CfgTest, rng: &mut rand::rngs::ThreadRng) -> Result<(String, bool, bool)> {
+pub fn handle_answer(
+    test: &CfgTest,
+    rng: &mut rand::rngs::ThreadRng,
+) -> Result<(String, bool, bool)> {
     let answer_type = test.get_answer_kind();
     println!("{}", test.question);
 
@@ -104,10 +109,20 @@ fn prepare_shuffled_options<R: Rng>(q: &CfgTest, rng: &mut R) -> (Vec<String>, V
     let original_correct_indices: Vec<usize> = match &q.correct {
         AnswerType::SingleAnswer(idx) => vec![*idx],
         AnswerType::MultipleAnswer(indices) => indices.iter().copied().collect(),
-        AnswerType::TextAnswer(_) => return (q.options.iter().map(|opt| opt.answer.clone()).collect(), Vec::new()),
+        AnswerType::TextAnswer(_) => {
+            return (
+                q.options.iter().map(|opt| opt.answer.clone()).collect(),
+                Vec::new(),
+            );
+        }
     };
 
-    let mut indexed: Vec<(usize, String)> = q.options.iter().map(|opt| opt.answer.clone()).enumerate().collect();
+    let mut indexed: Vec<(usize, String)> = q
+        .options
+        .iter()
+        .map(|opt| opt.answer.clone())
+        .enumerate()
+        .collect();
     indexed.shuffle(rng);
 
     let mut shuffled_options = Vec::with_capacity(indexed.len());
@@ -145,7 +160,12 @@ mod tests {
     fn make_test(options: Vec<&str>, correct: AnswerType) -> CfgTest {
         CfgTest {
             question: "?".to_string(),
-            options: options.into_iter().map(|s| CfgOption { answer: s.to_string() }).collect(),
+            options: options
+                .into_iter()
+                .map(|s| CfgOption {
+                    answer: s.to_string(),
+                })
+                .collect(),
             correct,
             accept: vec![],
         }
@@ -153,13 +173,14 @@ mod tests {
 
     #[test]
     fn prepare_shuffled_options_preserves_elements() {
-        let test = make_test(
-            vec!["A", "B", "C", "D"],
-            AnswerType::SingleAnswer(0),
-        );
+        let test = make_test(vec!["A", "B", "C", "D"], AnswerType::SingleAnswer(0));
         let mut rng = StdRng::seed_from_u64(42);
         let (shuffled, correct) = prepare_shuffled_options(&test, &mut rng);
-        let mut sorted_orig = test.options.iter().map(|o| o.answer.clone()).collect::<Vec<_>>();
+        let mut sorted_orig = test
+            .options
+            .iter()
+            .map(|o| o.answer.clone())
+            .collect::<Vec<_>>();
         sorted_orig.sort();
         let mut sorted_shuf = shuffled.clone();
         sorted_shuf.sort();
@@ -186,7 +207,8 @@ mod tests {
         let correct = vec![1];
         let mut input = Cursor::new("2\n".as_bytes());
         let mut output = Vec::new();
-        let (answer, ok, skipped) = process_single_choice_from(&mut input, &mut output, shuffled, correct).unwrap();
+        let (answer, ok, skipped) =
+            process_single_choice_from(&mut input, &mut output, shuffled, correct).unwrap();
         assert_eq!(answer, "B");
         assert!(ok);
         assert!(!skipped);
@@ -200,7 +222,8 @@ mod tests {
         let correct = vec![0];
         let mut input = Cursor::new("!пропуск\n".as_bytes());
         let mut output = Vec::new();
-        let (answer, ok, skipped) = process_single_choice_from(&mut input, &mut output, shuffled, correct).unwrap();
+        let (answer, ok, skipped) =
+            process_single_choice_from(&mut input, &mut output, shuffled, correct).unwrap();
         assert_eq!(answer, "");
         assert!(!ok);
         assert!(skipped);
@@ -212,7 +235,8 @@ mod tests {
         let correct = vec![0];
         let mut input = Cursor::new("!выход\n".as_bytes());
         let mut output = Vec::new();
-        let (answer, ok, skipped) = process_single_choice_from(&mut input, &mut output, shuffled, correct).unwrap();
+        let (answer, ok, skipped) =
+            process_single_choice_from(&mut input, &mut output, shuffled, correct).unwrap();
         assert_eq!(answer, "");
         assert!(!ok);
         assert!(skipped);
@@ -224,7 +248,8 @@ mod tests {
         let correct = vec![2]; // "C"
         let mut input = Cursor::new("0\n3\n".as_bytes());
         let mut output = Vec::new();
-        let (answer, ok, skipped) = process_single_choice_from(&mut input, &mut output, shuffled, correct).unwrap();
+        let (answer, ok, skipped) =
+            process_single_choice_from(&mut input, &mut output, shuffled, correct).unwrap();
         assert_eq!(answer, "C");
         assert!(ok);
         assert!(!skipped);
@@ -238,7 +263,8 @@ mod tests {
         let correct = vec![0, 2];
         let mut input = Cursor::new("1, 3\n".as_bytes());
         let mut output = Vec::new();
-        let (answer, ok, skipped) = process_multiple_choice_from(&mut input, &mut output, shuffled, correct).unwrap();
+        let (answer, ok, skipped) =
+            process_multiple_choice_from(&mut input, &mut output, shuffled, correct).unwrap();
         assert_eq!(answer, "A, C");
         assert!(ok);
         assert!(!skipped);
@@ -250,7 +276,8 @@ mod tests {
         let correct = vec![1, 2];
         let mut input = Cursor::new("3, 2\n".as_bytes());
         let mut output = Vec::new();
-        let (answer, ok, skipped) = process_multiple_choice_from(&mut input, &mut output, shuffled, correct).unwrap();
+        let (answer, ok, skipped) =
+            process_multiple_choice_from(&mut input, &mut output, shuffled, correct).unwrap();
         assert_eq!(answer, "Z, Y");
         assert!(ok);
         assert!(!skipped);
@@ -262,7 +289,8 @@ mod tests {
         let correct = vec![0, 1];
         let mut input = Cursor::new("!пропуск\n".as_bytes());
         let mut output = Vec::new();
-        let (answer, ok, skipped) = process_multiple_choice_from(&mut input, &mut output, shuffled, correct).unwrap();
+        let (answer, ok, skipped) =
+            process_multiple_choice_from(&mut input, &mut output, shuffled, correct).unwrap();
         assert_eq!(answer, "");
         assert!(!ok);
         assert!(skipped);
@@ -274,7 +302,8 @@ mod tests {
         let correct = vec![0];
         let mut input = Cursor::new("!выход\n".as_bytes());
         let mut output = Vec::new();
-        let (answer, ok, skipped) = process_multiple_choice_from(&mut input, &mut output, shuffled, correct).unwrap();
+        let (answer, ok, skipped) =
+            process_multiple_choice_from(&mut input, &mut output, shuffled, correct).unwrap();
         assert_eq!(answer, "");
         assert!(!ok);
         assert!(skipped);
@@ -290,7 +319,8 @@ mod tests {
         };
         let mut input = Cursor::new("правильный\n".as_bytes());
         let mut output = Vec::new();
-        let (answer, ok, skipped) = process_text_answer_from(&mut input, &mut output, &test).unwrap();
+        let (answer, ok, skipped) =
+            process_text_answer_from(&mut input, &mut output, &test).unwrap();
         assert_eq!(answer, "правильный");
         assert!(ok);
         assert!(!skipped);
@@ -306,7 +336,8 @@ mod tests {
         };
         let mut input = Cursor::new("\nтекст\n".as_bytes());
         let mut output = Vec::new();
-        let (answer, ok, skipped) = process_text_answer_from(&mut input, &mut output, &test).unwrap();
+        let (answer, ok, skipped) =
+            process_text_answer_from(&mut input, &mut output, &test).unwrap();
         assert_eq!(answer, "текст");
         assert!(ok);
         assert!(!skipped);
@@ -324,7 +355,8 @@ mod tests {
         };
         let mut input = Cursor::new("!пропуск\n".as_bytes());
         let mut output = Vec::new();
-        let (answer, ok, skipped) = process_text_answer_from(&mut input, &mut output, &test).unwrap();
+        let (answer, ok, skipped) =
+            process_text_answer_from(&mut input, &mut output, &test).unwrap();
         assert_eq!(answer, "");
         assert!(!ok);
         assert!(skipped);
@@ -340,7 +372,8 @@ mod tests {
         };
         let mut input = Cursor::new("!выход\n".as_bytes());
         let mut output = Vec::new();
-        let (answer, ok, skipped) = process_text_answer_from(&mut input, &mut output, &test).unwrap();
+        let (answer, ok, skipped) =
+            process_text_answer_from(&mut input, &mut output, &test).unwrap();
         assert_eq!(answer, "");
         assert!(!ok);
         assert!(skipped);

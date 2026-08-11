@@ -2,11 +2,11 @@ use crate::cli::cli::CliApp;
 use crate::config::config::Config;
 use anyhow::{Context, Result};
 
+mod cli;
 mod config;
 mod dto;
-mod utils;
-mod cli;
 mod types;
+mod utils;
 
 fn main() {
     if let Err(e) = run_app() {

@@ -10,8 +10,9 @@ where
     D: Deserializer<'de>,
 {
     let s = String::deserialize(deserializer)?;
-    humantime::parse_duration(&s)
-        .map_err(|e| serde::de::Error::custom(format!("некорректное значение result_delay={:?}: {}", s, e)))
+    humantime::parse_duration(&s).map_err(|e| {
+        serde::de::Error::custom(format!("некорректное значение result_delay={:?}: {}", s, e))
+    })
 }
 
 pub trait Grader {

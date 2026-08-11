@@ -44,10 +44,7 @@ fn normalize(s: &str) -> String {
         }
     }
 
-    result
-        .split_whitespace()
-        .collect::<Vec<&str>>()
-        .join(" ")
+    result.split_whitespace().collect::<Vec<&str>>().join(" ")
 }
 
 fn levenshtein(a: &str, b: &str) -> usize {
@@ -69,7 +66,11 @@ fn levenshtein(a: &str, b: &str) -> usize {
     for i in 1..=len_a {
         cur[0] = i;
         for j in 1..=len_b {
-            let cost = if a_chars[i - 1] == b_chars[j - 1] { 0 } else { 1 };
+            let cost = if a_chars[i - 1] == b_chars[j - 1] {
+                0
+            } else {
+                1
+            };
             let del = prev[j] + 1;
             let ins = cur[j - 1] + 1;
             let sub = prev[j - 1] + cost;
@@ -192,10 +193,8 @@ mod tests {
 
     #[test]
     fn match_text_with_accept() {
-        let test = TestCfgTest::text_answer(
-            "ответ",
-            vec!["вариант".to_string(), "другой".to_string()],
-        );
+        let test =
+            TestCfgTest::text_answer("ответ", vec!["вариант".to_string(), "другой".to_string()]);
         assert!(match_text("вариант", &test.to_cfg_test()));
         assert!(match_text("Другой", &test.to_cfg_test()));
         assert!(match_text("ответ", &test.to_cfg_test()));

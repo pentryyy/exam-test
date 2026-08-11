@@ -1,0 +1,1174 @@
+exam_subject: "ПО ИНОСТРАННОМУ ЯЗЫКУ (АНГЛИЙСКИЙ)"
+
+# ============================================================
+# Пул вопросов к вступительному экзамену в аспирантуру ДГТУ
+# по иностранному языку (английский язык)
+#
+# Разделы программы:
+#   1. Грамматика (16 тем)
+#   2. Лексика (научная и общеупотребительная терминология)
+#   3. Чтение (изучающее, поисковое, просмотровое)
+#   4. Перевод (научно-технический текст)
+#
+# Формат вопросов:
+# Каждый вопрос представляет собой словарь с ключами:
+#   - question: "текст вопроса" (обязательно)
+#   - options: (необязательно)
+#       - answer: "вариант 1"
+#       - answer: "вариант 2"
+#       ...
+#   - correct: (обязательно)
+#       * если есть options — список индексов правильных вариантов (с нуля),
+#         например [0, 2] для множественного выбора;
+#       * если options нет — строка с точным ответом.
+#   - accept: (необязательно, только для свободного ввода)
+#       список дополнительных принимаемых вариантов ответа.
+# ============================================================
+
+questions:
+  # ---------- Раздел 1. Грамматика ----------
+- question: 'Choose the correct form: Water ____ at 100 °C under normal pressure.'
+  options:
+  - answer: boils
+  - answer: is boiling
+  - answer: has boiled
+  - answer: has been boiling
+  correct:
+  - 0
+- question: 'Choose the correct form: Look! The professor ____ the results of the experiment.'
+  options:
+  - answer: presents
+  - answer: is presenting
+  - answer: has presented
+  - answer: present
+  correct:
+  - 1
+- question: 'Choose the correct form: Our team ____ on this project since January.'
+  options:
+  - answer: works
+  - answer: worked
+  - answer: has been working
+  - answer: is working
+  correct:
+  - 2
+- question: 'Choose the correct form: The laboratory ____ already ____ three papers this year.'
+  options:
+  - answer: has / published
+  - answer: have / published
+  - answer: is / publishing
+  - answer: had / published
+  correct:
+  - 0
+- question: 'Choose the correct form: How long ____ you ____ English?'
+  options:
+  - answer: do / study
+  - answer: have / been studying
+  - answer: are / studying
+  - answer: did / study
+  correct:
+  - 1
+- question: В каких случаях употребляется Present Simple? Выберите все верные варианты.
+  options:
+  - answer: Регулярные, повторяющиеся действия
+  - answer: Общеизвестные факты и научные закономерности
+  - answer: Расписания поездов, самолётов, занятий
+  - answer: Действие, происходящее в момент речи
+  - answer: Действие, начавшееся в прошлом и продолжающееся сейчас
+  correct:
+  - 0
+  - 1
+  - 2
+- question: 'Choose the correct form: This is the first time I ____ such an approach.'
+  options:
+  - answer: see
+  - answer: saw
+  - answer: have seen
+  - answer: am seeing
+  correct:
+  - 2
+- question: 'Choose the correct form: When I arrived at the seminar, the speaker ____ already ____ his
+    report.'
+  options:
+  - answer: has / finished
+  - answer: had / finished
+  - answer: was / finishing
+  - answer: did / finish
+  correct:
+  - 1
+- question: 'Choose the correct form: While I ____ the report, my colleague was checking the data.'
+  options:
+  - answer: wrote
+  - answer: was writing
+  - answer: had written
+  - answer: have written
+  correct:
+  - 1
+- question: 'Choose the correct form: They ____ for two hours before the first results appeared.'
+  options:
+  - answer: waited
+  - answer: were waiting
+  - answer: had been waiting
+  - answer: have been waiting
+  correct:
+  - 2
+- question: 'Choose the correct form: I was fed up after I found out I ____ the job.'
+  options:
+  - answer: hadn't got
+  - answer: hasn't got
+  - answer: wasn't getting
+  - answer: had been getting
+  correct:
+  - 0
+- question: 'Choose the correct form: The scientist ____ this effect in 1905.'
+  options:
+  - answer: has discovered
+  - answer: discovered
+  - answer: had discovered
+  - answer: was discovering
+  correct:
+  - 1
+- question: Какие маркеры времени типичны для Past Simple? Выберите все верные варианты.
+  options:
+  - answer: yesterday
+  - answer: in 1990
+  - answer: two years ago
+  - answer: since 2010
+  - answer: so far
+  correct:
+  - 0
+  - 1
+  - 2
+- question: 'Choose the correct form: I ____ that this approach is more efficient.'
+  options:
+  - answer: am thinking
+  - answer: think
+  - answer: have been thinking
+  - answer: was thinking
+  correct:
+  - 1
+- question: 'Choose the correct form: She ____ the new equipment at the moment.'
+  options:
+  - answer: tests
+  - answer: is testing
+  - answer: test
+  - answer: has tested
+  correct:
+  - 1
+- question: Которые из перечисленных глаголов относятся к глаголам состояния (state verbs)? Выберите все
+    верные варианты.
+  options:
+  - answer: know
+  - answer: belong
+  - answer: seem
+  - answer: run
+  - answer: write
+  correct:
+  - 0
+  - 1
+  - 2
+- question: Choose the correct sentence.
+  options:
+  - answer: This device belongs to our laboratory.
+  - answer: This device is belonging to our laboratory.
+  - answer: This device belong to our laboratory.
+  - answer: This device is belong to our laboratory.
+  correct:
+  - 0
+- question: 'Choose the correct form: Look at those clouds! It ____ .'
+  options:
+  - answer: will rain
+  - answer: is going to rain
+  - answer: rains
+  - answer: is raining
+  correct:
+  - 1
+- question: 'Choose the correct form: I ____ dinner with my supervisor at seven tomorrow — everything
+    is arranged.'
+  options:
+  - answer: will have
+  - answer: am having
+  - answer: have
+  - answer: would have
+  correct:
+  - 1
+- question: 'Choose the correct form: The train to Rostov ____ at 6:15 according to the timetable.'
+  options:
+  - answer: leaves
+  - answer: is leaving
+  - answer: will leave
+  - answer: is going to leave
+  correct:
+  - 0
+- question: 'Choose the correct form: I think this method ____ better results.'
+  options:
+  - answer: gives
+  - answer: is giving
+  - answer: will give
+  - answer: is going to give
+  correct:
+  - 2
+- question: Какие средства используются в английском языке для выражения будущего? Выберите все верные
+    варианты.
+  options:
+  - answer: Future Simple (will + инфинитив)
+  - answer: Конструкция to be going to
+  - answer: Present Continuous для запланированных действий
+  - answer: Past Perfect Continuous
+  - answer: Past Perfect
+  correct:
+  - 0
+  - 1
+  - 2
+- question: 'Choose the correct form: I ____ work in a laboratory, but now I teach at the university.'
+  options:
+  - answer: used to
+  - answer: am used to
+  - answer: was used to
+  - answer: use to
+  correct:
+  - 0
+- question: 'Choose the correct form: At first it was difficult, but now I ____ working at night.'
+  options:
+  - answer: used to
+  - answer: am used to
+  - answer: use to
+  - answer: would use
+  correct:
+  - 1
+- question: 'Choose the correct form: She is gradually ____ to the new software.'
+  options:
+  - answer: used
+  - answer: getting used
+  - answer: use
+  - answer: using
+  correct:
+  - 1
+- question: Какое утверждение о конструкциях used to do и be used to doing верно?
+  options:
+  - answer: used to do обозначает регулярное действие в прошлом, которого больше нет; be used to doing
+      — привычность к чему-либо
+  - answer: Обе конструкции обозначают только привычку в настоящем
+  - answer: После be used to всегда следует инфинитив без частицы to
+  - answer: used to употребляется только в вопросительных предложениях
+  correct:
+  - 0
+- question: 'Choose the correct form: I ____ my article ____ by a native speaker last week.'
+  options:
+  - answer: had / proofread
+  - answer: have / proofread
+  - answer: did / proofread
+  - answer: was / proofreading
+  correct:
+  - 0
+- question: 'Choose the correct form: We are going to ____ the equipment ____ next month.'
+  options:
+  - answer: have / repaired
+  - answer: have / repair
+  - answer: make / repaired
+  - answer: let / repair
+  correct:
+  - 0
+- question: Which sentence means that somebody else did the work for the speaker?
+  options:
+  - answer: I had my computer repaired.
+  - answer: I repaired my computer.
+  - answer: I was repairing my computer.
+  - answer: I have repaired my computer.
+  correct:
+  - 0
+- question: 'Choose the correct form: You ____ smoke in the laboratory — it is strictly forbidden.'
+  options:
+  - answer: mustn't
+  - answer: don't have to
+  - answer: needn't
+  - answer: couldn't
+  correct:
+  - 0
+- question: 'Choose the correct form: Attendance is optional, so you ____ come if you are busy.'
+  options:
+  - answer: mustn't
+  - answer: don't have to
+  - answer: can't
+  - answer: shouldn't
+  correct:
+  - 1
+- question: 'Choose the correct form: He ____ be in his office — the light is on and his car is outside.'
+  options:
+  - answer: can't
+  - answer: must
+  - answer: may not
+  - answer: needn't
+  correct:
+  - 1
+- question: 'Choose the correct form: I ____ check the mail in the morning and welcome visitors to the
+    office.'
+  options:
+  - answer: can
+  - answer: ought to
+  - answer: don't have to
+  - answer: have to
+  correct:
+  - 3
+- question: 'Choose the correct form: She ____ speak three foreign languages when she was ten.'
+  options:
+  - answer: can
+  - answer: could
+  - answer: may
+  - answer: must
+  correct:
+  - 1
+- question: Какие модальные глаголы могут выражать предположение с разной степенью уверенности? Выберите
+    все верные варианты.
+  options:
+  - answer: must
+  - answer: may
+  - answer: might
+  - answer: shall
+  correct:
+  - 0
+  - 1
+  - 2
+- question: 'Choose the correct form: I look forward to ____ from you.'
+  options:
+  - answer: hear
+  - answer: hearing
+  - answer: have heard
+  - answer: be heard
+  correct:
+  - 1
+- question: 'Choose the correct form: He suggested ____ an additional experiment.'
+  options:
+  - answer: to conduct
+  - answer: conducting
+  - answer: conduct
+  - answer: to conducting
+  correct:
+  - 1
+- question: 'Choose the correct form: They decided ____ the deadline for the paper.'
+  options:
+  - answer: postponing
+  - answer: to postpone
+  - answer: postpone
+  - answer: having postponed
+  correct:
+  - 1
+- question: 'Choose the correct form: I remember ____ this article last year; it was very useful.'
+  options:
+  - answer: to read
+  - answer: reading
+  - answer: read
+  - answer: to have read
+  correct:
+  - 1
+- question: 'Choose the correct form: We managed ____ the problem within two days.'
+  options:
+  - answer: solving
+  - answer: to solve
+  - answer: solve
+  - answer: having solved
+  correct:
+  - 1
+- question: После каких глаголов употребляется герундий (Gerund)? Выберите все верные варианты.
+  options:
+  - answer: avoid
+  - answer: mind
+  - answer: enjoy
+  - answer: decide
+  - answer: promise
+  correct:
+  - 0
+  - 1
+  - 2
+- question: 'Choose the correct form: This method is ____ than the previous one.'
+  options:
+  - answer: more efficient
+  - answer: efficienter
+  - answer: the most efficient
+  - answer: as efficient
+  correct:
+  - 0
+- question: 'Choose the correct form: It is the ____ result we have ever obtained.'
+  options:
+  - answer: better
+  - answer: best
+  - answer: goodest
+  - answer: more good
+  correct:
+  - 1
+- question: 'Choose the correct form: The more data we collect, the ____ the model becomes.'
+  options:
+  - answer: accurate
+  - answer: more accurate
+  - answer: most accurate
+  - answer: accurater
+  correct:
+  - 1
+- question: 'Choose the correct form: This algorithm is twice ____ as the previous one.'
+  options:
+  - answer: as fast
+  - answer: faster
+  - answer: so fast
+  - answer: the fastest
+  correct:
+  - 0
+- question: Какие прилагательные образуют степени сравнения не по правилу (супплетивно)? Выберите все
+    верные варианты.
+  options:
+  - answer: good
+  - answer: bad
+  - answer: little
+  - answer: large
+  - answer: clever
+  correct:
+  - 0
+  - 1
+  - 2
+- question: 'Choose the correct variant: ____ Sun is ____ star.'
+  options:
+  - answer: The / a
+  - answer: A / the
+  - answer: — / a
+  - answer: The / —
+  correct:
+  - 0
+- question: 'Choose the correct variant: He is ____ engineer at a research institute.'
+  options:
+  - answer: a
+  - answer: an
+  - answer: the
+  - answer: —
+  correct:
+  - 1
+- question: 'Choose the correct variant: We discussed ____ problem you mentioned yesterday.'
+  options:
+  - answer: a
+  - answer: an
+  - answer: the
+  - answer: —
+  correct:
+  - 2
+- question: 'Choose the correct variant: ____ water is essential for all forms of life.'
+  options:
+  - answer: A
+  - answer: An
+  - answer: The
+  - answer: —
+  correct:
+  - 3
+- question: В каких случаях употребляется определённый артикль the? Выберите все верные варианты.
+  options:
+  - answer: Перед существительным, уже упомянутым в контексте
+  - answer: Перед уникальными объектами (the Sun, the Earth)
+  - answer: Перед превосходной степенью прилагательного
+  - answer: Перед неисчисляемым существительным в общем значении
+  - answer: Перед именами собственными людей без определений
+  correct:
+  - 0
+  - 1
+  - 2
+- question: 'Choose the correct form: We have very ____ time before the deadline.'
+  options:
+  - answer: few
+  - answer: little
+  - answer: many
+  - answer: a few
+  correct:
+  - 1
+- question: 'Choose the correct form: How ____ experiments did you carry out?'
+  options:
+  - answer: much
+  - answer: many
+  - answer: little
+  - answer: a lot
+  correct:
+  - 1
+- question: 'Choose the correct form: There ____ a lot of people at the conference.'
+  options:
+  - answer: was
+  - answer: were
+  - answer: is
+  - answer: has been
+  correct:
+  - 1
+- question: 'Choose the correct form: Could you give me ____ of advice?'
+  options:
+  - answer: a piece
+  - answer: a slice
+  - answer: a sheet
+  - answer: a bar
+  correct:
+  - 0
+- question: Какие квантификаторы употребляются с неисчисляемыми существительными? Выберите все верные
+    варианты.
+  options:
+  - answer: much
+  - answer: little
+  - answer: a great deal of
+  - answer: many
+  - answer: few
+  correct:
+  - 0
+  - 1
+  - 2
+- question: 'Choose the correct form: If you pay cash, I ____ you an extra five per cent discount.'
+  options:
+  - answer: give
+  - answer: would give
+  - answer: gave
+  - answer: will give
+  correct:
+  - 3
+- question: 'Choose the correct form: If I ____ more time, I would finish the paper this week.'
+  options:
+  - answer: have
+  - answer: had
+  - answer: will have
+  - answer: would have
+  correct:
+  - 1
+- question: 'Choose the correct form: If we had known about the error, we ____ it immediately.'
+  options:
+  - answer: would correct
+  - answer: will correct
+  - answer: would have corrected
+  - answer: corrected
+  correct:
+  - 2
+- question: 'Choose the correct form: I will call you as soon as I ____ the results.'
+  options:
+  - answer: will get
+  - answer: get
+  - answer: would get
+  - answer: am getting
+  correct:
+  - 1
+- question: 'Choose the correct form: If water ____ to 100 °C, it boils.'
+  options:
+  - answer: will be heated
+  - answer: is heated
+  - answer: would be heated
+  - answer: were heated
+  correct:
+  - 1
+- question: Какие утверждения об условных предложениях верны? Выберите все верные варианты.
+  options:
+  - answer: В придаточном предложении первого типа будущее время не употребляется
+  - answer: Второй тип условных предложений описывает нереальное условие в настоящем или будущем
+  - answer: Третий тип условных предложений относится к прошлому и описывает несостоявшееся условие
+  - answer: В придаточных времени после when, as soon as употребляется will
+  correct:
+  - 0
+  - 1
+  - 2
+- question: 'Choose the correct form: The scientist ____ discovered this effect received the Nobel Prize.'
+  options:
+  - answer: which
+  - answer: who
+  - answer: whose
+  - answer: what
+  correct:
+  - 1
+- question: 'Choose the correct form: This is the laboratory ____ we carried out the experiment.'
+  options:
+  - answer: which
+  - answer: that
+  - answer: where
+  - answer: when
+  correct:
+  - 2
+- question: 'Choose the correct form: My supervisor, ____ works in Rostov-on-Don, is an expert in AI.'
+  options:
+  - answer: that
+  - answer: who
+  - answer: which
+  - answer: what
+  correct:
+  - 1
+- question: In which sentence can the relative pronoun be omitted?
+  options:
+  - answer: The article that you recommended is very useful.
+  - answer: The article that describes this method is very useful.
+  - answer: The scientist who discovered the effect is famous.
+  - answer: The device which is used here is new.
+  correct:
+  - 0
+- question: Какие признаки характерны для распространительных (non-defining) определительных придаточных
+    предложений? Выберите все верные варианты.
+  options:
+  - answer: Выделяются запятыми
+  - answer: Содержат дополнительную, необязательную информацию
+  - answer: Не допускают употребления союзного слова that
+  - answer: Относительное местоимение в них может опускаться
+  correct:
+  - 0
+  - 1
+  - 2
+- question: 'Report the sentence: ''I have cancelled your cards.'' The guy I spoke to told me ____ .'
+  options:
+  - answer: he have cancelled my cards
+  - answer: he has cancelled my cards
+  - answer: he had cancelled his cards
+  - answer: he had cancelled my cards
+  correct:
+  - 3
+- question: 'Report the question: ''Where do you work?'' She asked me where ____ .'
+  options:
+  - answer: do I work
+  - answer: I worked
+  - answer: did I work
+  - answer: I work?
+  correct:
+  - 1
+- question: 'Report the order: ''Don''t touch the equipment!'' The engineer told me ____ .'
+  options:
+  - answer: don't touch the equipment
+  - answer: not to touch the equipment
+  - answer: to don't touch the equipment
+  - answer: that not touch the equipment
+  correct:
+  - 1
+- question: 'Report the sentence: ''I will send you the results tomorrow.'' He said he ____ the results
+    the next day.'
+  options:
+  - answer: will send
+  - answer: would send
+  - answer: sends
+  - answer: had sent
+  correct:
+  - 1
+- question: Какие изменения происходят при переводе прямой речи в косвенную? Выберите все верные варианты.
+  options:
+  - answer: Сдвиг времён назад (backshift)
+  - answer: Изменение личных и притяжательных местоимений
+  - answer: Изменение указателей времени и места (tomorrow → the next day)
+  - answer: Обязательная замена всех глаголов на инфинитив
+  correct:
+  - 0
+  - 1
+  - 2
+- question: 'Choose the correct form: The first working version of the World Wide Web ____ in 1990.'
+  options:
+  - answer: was completed
+  - answer: had been completed
+  - answer: has completed
+  - answer: were completed
+  correct:
+  - 0
+- question: 'Choose the correct form: The results ____ at the moment.'
+  options:
+  - answer: are processed
+  - answer: are being processed
+  - answer: are processing
+  - answer: have processed
+  correct:
+  - 1
+- question: 'Choose the correct form: This method ____ widely in industry nowadays.'
+  options:
+  - answer: uses
+  - answer: is used
+  - answer: is using
+  - answer: used
+  correct:
+  - 1
+- question: 'Complete the tag question: You are a postgraduate student, ____ ?'
+  options:
+  - answer: aren't you
+  - answer: are you
+  - answer: don't you
+  - answer: isn't it
+  correct:
+  - 0
+- question: 'Complete the tag question: Let''s start the experiment, ____ ?'
+  options:
+  - answer: will we
+  - answer: shall we
+  - answer: don't we
+  - answer: aren't we
+  correct:
+  - 1
+- question: 'Complete the tag question: She hardly ever makes mistakes, ____ ?'
+  options:
+  - answer: does she
+  - answer: doesn't she
+  - answer: is she
+  - answer: did she
+  correct:
+  - 0
+- question: Почему пассивный залог широко используется в научном стиле речи? Выберите все верные варианты.
+  options:
+  - answer: Позволяет сместить акцент на действие и его результат, а не на исполнителя
+  - answer: Обеспечивает объективность и безличность изложения
+  - answer: Позволяет не указывать деятеля, если он не важен или очевиден
+  - answer: Сокращает количество терминов в тексте
+  correct:
+  - 0
+  - 1
+  - 2
+- question: 'Choose the correct phrasal verb: Scientists are trying to ____ a new method of data processing.'
+  options:
+  - answer: come up with
+  - answer: come across
+  - answer: come down
+  - answer: come off
+  correct:
+  - 0
+- question: 'Choose the correct phrasal verb: Please ____ this abbreviation ____ in the dictionary.'
+  options:
+  - answer: look / up
+  - answer: look / after
+  - answer: look / for
+  - answer: look / into
+  correct:
+  - 0
+- question: 'Choose the correct phrasal verb: The experiment was ____ because of the lack of funding.'
+  options:
+  - answer: called off
+  - answer: called on
+  - answer: called up
+  - answer: called for
+  correct:
+  - 0
+- question: 'Choose the correct phrasal verb: We have run ____ of reagents, so the tests are postponed.'
+  options:
+  - answer: out
+  - answer: 'off'
+  - answer: over
+  - answer: into
+  correct:
+  - 0
+- question: 'Choose the correct phrasal verb: Do not ____ after the first failure; repeat the measurement.'
+  options:
+  - answer: give up
+  - answer: give in to
+  - answer: give away
+  - answer: give out
+  correct:
+  - 0
+- question: 'Match the meaning: to carry out an experiment means ____ .'
+  options:
+  - answer: to conduct / to perform an experiment
+  - answer: to cancel an experiment
+  - answer: to describe an experiment
+  - answer: to repeat an experiment
+  correct:
+  - 0
+  # ---------- Раздел 2. Лексика ----------
+- question: 'Match the word with its definition: cloud computing is ____ .'
+  options:
+  - answer: data centres available to many users over the Internet
+  - answer: an area of computer science that emphasises the creation of intelligent machines
+  - answer: a result or effect of an action, situation or event
+  - answer: a form of design in which people work with computers to create prototypes
+  correct:
+  - 0
+- question: 'Match the word with its definition: artificial intelligence is ____ .'
+  options:
+  - answer: an area of computer science that emphasises the creation of intelligent machines that work
+      and react like humans
+  - answer: a network of data centres available over the Internet
+  - answer: a set of rules for formatting a scientific paper
+  - answer: a device for measuring physical quantities
+  correct:
+  - 0
+- question: 'Insert the correct lexical unit: I have just read an interesting book which offers a new
+    ____ to design.'
+  options:
+  - answer: approach
+  - answer: solution
+  - answer: leverage
+  - answer: challenge
+  correct:
+  - 0
+- question: 'Insert the correct lexical unit: The author ____ several experiments to verify the hypothesis.'
+  options:
+  - answer: carried out
+  - answer: made up
+  - answer: took part
+  - answer: brought about
+  correct:
+  - 0
+- question: 'Insert the correct lexical unit: On the basis of the data obtained the researchers ____ a
+    conclusion about the efficiency of the algorithm.'
+  options:
+  - answer: drew
+  - answer: made out
+  - answer: took
+  - answer: gave in
+  correct:
+  - 0
+- question: 'Choose the correct term: научный руководитель аспиранта — это ____ .'
+  options:
+  - answer: supervisor
+  - answer: chief
+  - answer: director
+  - answer: manager
+  correct:
+  - 0
+- question: 'Choose the correct term: краткое изложение содержания статьи, помещаемое в её начале, — это
+    ____ .'
+  options:
+  - answer: abstract
+  - answer: contents
+  - answer: preface
+  - answer: appendix
+  correct:
+  - 0
+- question: 'Choose the correct term: журнал, статьи в котором проходят рецензирование коллегами-учёными,
+    называется ____ .'
+  options:
+  - answer: a peer-reviewed journal
+  - answer: a popular magazine
+  - answer: a conference proceedings
+  - answer: a textbook
+  correct:
+  - 0
+- question: 'Choose the correct meaning: a hypothesis is ____ .'
+  options:
+  - answer: an assumption put forward to be tested by research
+  - answer: a proven scientific law
+  - answer: a list of references
+  - answer: a piece of equipment
+  correct:
+  - 0
+- question: 'Which word is a ''false friend'' of the translator: the English adjective accurate means
+    ____ .'
+  options:
+  - answer: точный
+  - answer: аккуратный
+  - answer: актуальный
+  - answer: аккуратно оформленный
+  correct:
+  - 0
+- question: 'Choose the correct sentence: the word data in strict academic usage is ____ .'
+  options:
+  - answer: a plural form of datum, traditionally used with a plural verb
+  - answer: always an uncountable noun with a singular verb only
+  - answer: a verb
+  - answer: an adjective
+  correct:
+  - 0
+- question: Which words belong to the vocabulary of environmental protection? Выберите все верные варианты.
+  options:
+  - answer: pollution
+  - answer: renewable energy
+  - answer: waste disposal
+  - answer: shareholder
+  - answer: invoice
+  correct:
+  - 0
+  - 1
+  - 2
+- question: Which collocations are correct in academic English? Выберите все верные варианты.
+  options:
+  - answer: to conduct research
+  - answer: to make a contribution
+  - answer: to draw a conclusion
+  - answer: to do a mistake
+  - answer: to make an experiment
+  correct:
+  - 0
+  - 1
+  - 2
+- question: 'Choose the correct verb: The paper ____ with the problem of image recognition.'
+  options:
+  - answer: deals
+  - answer: makes
+  - answer: takes
+  - answer: gives
+  correct:
+  - 0
+- question: 'Choose the correct word: The main ____ of this study is to develop a new model.'
+  options:
+  - answer: objective
+  - answer: object
+  - answer: objection
+  - answer: objectivity
+  correct:
+  - 0
+- question: 'Choose the correct word combination: результаты, полученные в ходе исследования, — это ____
+    .'
+  options:
+  - answer: the findings obtained in the course of the study
+  - answer: the finding taken during the study
+  - answer: the outcomes made in a study process
+  - answer: the results done in the study
+  correct:
+  - 0
+- question: 'Choose the correct word: Значительный прогресс в этой области — significant ____ in this
+    field.'
+  options:
+  - answer: advances
+  - answer: advantages
+  - answer: advertisements
+  - answer: adventures
+  correct:
+  - 0
+- question: Which nouns are formed from the verb to research, to develop and to apply respectively? Выберите
+    все верные варианты.
+  options:
+  - answer: research
+  - answer: development
+  - answer: application
+  - answer: researching
+  - answer: appliance
+  correct:
+  - 0
+  - 1
+  - 2
+  # ---------- Раздел 3. Чтение ----------
+- question: 'Прочитайте текст и выполните задание.
+
+    Generative design replicates the natural world''s evolutionary approach with cloud computing to provide
+    thousands of solutions to one engineering problem. Using artificial intelligence software and the
+    compute power of the cloud, it enables engineers to create thousands of design options by simply defining
+    their design problem — inputting basic parameters such as height, weight it must support, strength
+    and material options. From there, the engineers can filter and select the outcomes that best meet
+    their needs.
+
+
+    What does generative design replicate to provide thousands of solutions to one engineering problem?'
+  options:
+  - answer: natural world's evolutionary approach with cloud computing
+  - answer: the way everyday items are made
+  - answer: basic parameters such as height and weight
+  - answer: ideas that are in your head
+  correct:
+  - 0
+- question: 'Прочитайте текст и выполните задание.
+
+    Generative design replicates the natural world''s evolutionary approach with cloud computing to provide
+    thousands of solutions to one engineering problem. Using artificial intelligence software and the
+    compute power of the cloud, it enables engineers to create thousands of design options by simply defining
+    their design problem — inputting basic parameters such as height, weight it must support, strength
+    and material options. From there, the engineers can filter and select the outcomes that best meet
+    their needs.
+
+
+    How does generative design enable engineers to create thousands of design options?'
+  options:
+  - answer: by inputting basic parameters into generative design software
+  - answer: by starting a drawing with two or three options
+  - answer: with more negative impact on the environment
+  - answer: using only their own imagination and past experience
+  correct:
+  - 0
+- question: 'Прочитайте текст и выполните задание.
+
+    Generative design replicates the natural world''s evolutionary approach with cloud computing to provide
+    thousands of solutions to one engineering problem. Using artificial intelligence software and the
+    compute power of the cloud, it enables engineers to create thousands of design options by simply defining
+    their design problem — inputting basic parameters such as height, weight it must support, strength
+    and material options. From there, the engineers can filter and select the outcomes that best meet
+    their needs.
+
+
+    Which parameters are mentioned in the text as input for generative design? Выберите все верные варианты.'
+  options:
+  - answer: height
+  - answer: weight the object must support
+  - answer: strength and material options
+  - answer: the price of the software
+  - answer: the number of engineers in the team
+  correct:
+  - 0
+  - 1
+  - 2
+- question: 'Прочитайте текст и выполните задание.
+
+    Generative design replicates the natural world''s evolutionary approach with cloud computing to provide
+    thousands of solutions to one engineering problem. Using artificial intelligence software and the
+    compute power of the cloud, it enables engineers to create thousands of design options by simply defining
+    their design problem — inputting basic parameters such as height, weight it must support, strength
+    and material options. From there, the engineers can filter and select the outcomes that best meet
+    their needs.
+
+
+    According to the text, what do engineers do with the generated outcomes?'
+  options:
+  - answer: they filter and select the options that best meet their needs
+  - answer: they send all of them to the customer without any selection
+  - answer: they translate them into another language
+  - answer: they delete all options except the first one
+  correct:
+  - 0
+- question: Какой вид чтения предполагает максимально полное и точное понимание всей информации текста
+    с последующим её анализом?
+  options:
+  - answer: Изучающее чтение (reading for detail)
+  - answer: Просмотровое чтение (skimming)
+  - answer: Поисковое чтение (scanning)
+  - answer: Ознакомительное чтение
+  correct:
+  - 0
+- question: Какой вид чтения используется, когда нужно быстро найти в тексте конкретную деталь — дату,
+    термин, цифру?
+  options:
+  - answer: Поисковое чтение (scanning)
+  - answer: Изучающее чтение
+  - answer: Просмотровое чтение (skimming)
+  - answer: Аналитическое чтение
+  correct:
+  - 0
+- question: Что понимается под языковой и контекстуальной догадкой при чтении научного текста? Выберите
+    все верные варианты.
+  options:
+  - answer: Определение значения слова по его словообразовательным элементам
+  - answer: Определение значения слова по контексту и логике изложения
+  - answer: Опора на интернационализмы и термины, знакомые из специальности
+  - answer: Дословный перевод каждого слова со словарём
+  correct:
+  - 0
+  - 1
+  - 2
+- question: Какие признаки характерны для научного функционального стиля в английском языке? Выберите
+    все верные варианты.
+  options:
+  - answer: Широкое использование терминологии
+  - answer: Частое употребление пассивного залога и безличных конструкций
+  - answer: Логичность и точность изложения, отсутствие эмоциональной окраски
+  - answer: Использование сленга и разговорных сокращений
+  - answer: Преобладание восклицательных предложений
+  correct:
+  - 0
+  - 1
+  - 2
+- question: Просмотровое чтение (skimming) применяется прежде всего для того, чтобы ____ .
+  options:
+  - answer: получить общее представление о теме и содержании текста
+  - answer: перевести текст дословно
+  - answer: выучить все незнакомые слова текста
+  - answer: составить подробный терминологический глоссарий
+  correct:
+  - 0
+  # ---------- Раздел 4. Перевод ----------
+- question: 'Give the correct translation: Генеративный дизайн использует машинное обучение для воспроизведения
+    эволюционного подхода в природе к проектированию.'
+  options:
+  - answer: generative design leverages machine learning to mimic nature's evolutionary approach to design
+  - answer: generative design uses machine learning to produce company's evolutionary approach to design
+  - answer: general design uses machine learning in the providing of design's evolutionary approach
+  - answer: a genesic design uses computer-aided instruction in the evolutional going of musical company
+  correct:
+  - 0
+- question: 'Give the correct translation: Результаты исследования были опубликованы в прошлом году.'
+  options:
+  - answer: The results of the study were published last year.
+  - answer: The results of the study are published last year.
+  - answer: The results of the study have published last year.
+  - answer: The results of the study were publishing last year.
+  correct:
+  - 0
+- question: 'Give the correct translation: В статье рассматривается новый метод обработки больших объёмов
+    данных.'
+  options:
+  - answer: The paper deals with a new method of processing large amounts of data.
+  - answer: The paper is dealt with a new method of processing large data amount.
+  - answer: The article looks a new method for process of big data.
+  - answer: In the article considers the new method of the processing of data.
+  correct:
+  - 0
+- question: 'Give the correct translation: The data obtained make it possible to draw the following conclusion.'
+  options:
+  - answer: Полученные данные позволяют сделать следующий вывод.
+  - answer: Данные, которые получают, делают возможный следующий вывод.
+  - answer: Полученная дата даёт возможность нарисовать следующее заключение.
+  - answer: Данные получены и следующий вывод возможен.
+  correct:
+  - 0
+- question: 'Give the correct translation: This problem has been given much attention lately.'
+  options:
+  - answer: В последнее время этой проблеме уделяется большое внимание.
+  - answer: Эта проблема дала много внимания в последнее время.
+  - answer: Данная проблема была отдана вниманию поздно.
+  - answer: Проблема будет рассмотрена с большим вниманием.
+  correct:
+  - 0
+- question: 'Give the correct translation: Цель работы — разработать математическую модель процесса.'
+  options:
+  - answer: The objective of the work is to develop a mathematical model of the process.
+  - answer: The aim of the work is developing of the mathematical model of process.
+  - answer: The goal of work is elaborate mathematical model for the process.
+  - answer: The purpose of the paper are to develop mathematic model of process.
+  correct:
+  - 0
+- question: 'Give the correct translation: Научная новизна работы заключается в следующем.'
+  options:
+  - answer: The scientific novelty of the work is as follows.
+  - answer: The scientific newness of work concludes in the following.
+  - answer: The science novelty of the work is including in the next.
+  - answer: The novel science of the work lies as follow.
+  correct:
+  - 0
+- question: 'Give the correct translation: Предлагаемый алгоритм существенно сокращает время вычислений.'
+  options:
+  - answer: The proposed algorithm considerably reduces the computation time.
+  - answer: The offered algorithm is essentially reducing time of the computing.
+  - answer: The suggested algorithm is shortened the calculation time significantly.
+  - answer: The algorithm proposes to reduce essential computing time.
+  correct:
+  - 0
+- question: 'Give the correct translation: It should be noted that the accuracy of the model depends on
+    the size of the training sample.'
+  options:
+  - answer: Следует отметить, что точность модели зависит от объёма обучающей выборки.
+  - answer: Нужно записать, что аккуратность модели зависит от размера тренировки.
+  - answer: Отмечено, что точность модели зависела от объёма выборки образцов.
+  - answer: Стоит заметить, что модель точна при любом объёме данных.
+  correct:
+  - 0
+- question: Какие приёмы относятся к основным переводческим трансформациям? Выберите все верные варианты.
+  options:
+  - answer: Конкретизация и генерализация
+  - answer: Калькирование
+  - answer: Транскрипция и транслитерация
+  - answer: Реферирование
+  - answer: Аннотирование
+  correct:
+  - 0
+  - 1
+  - 2
+- question: Что такое калькирование как приём перевода?
+  options:
+  - answer: Пословный (поморфемный) перевод составных терминов с сохранением их структуры
+  - answer: Передача звучания иноязычного слова средствами языка перевода
+  - answer: Замена видового понятия родовым
+  - answer: Полный отказ от перевода термина
+  correct:
+  - 0
+- question: Чем аннотация (annotation) отличается от реферата (abstract/precis) научной статьи?
+  options:
+  - answer: Аннотация лишь называет тему и характер работы, реферат кратко излагает её основное содержание
+      и результаты
+  - answer: Аннотация всегда длиннее реферата
+  - answer: Реферат не содержит выводов, а аннотация содержит
+  - answer: Между ними нет различий
+  correct:
+  - 0
+- question: Какие требования предъявляются к переводу научно-технического текста? Выберите все верные
+    варианты.
+  options:
+  - answer: Точность передачи содержания и терминологическая корректность
+  - answer: Соблюдение норм научного стиля языка перевода
+  - answer: Логичность и однозначность формулировок
+  - answer: Художественная образность и эмоциональность изложения
+  correct:
+  - 0
+  - 1
+  - 2
+- question: Перевод английских атрибутивных цепочек типа 'data processing system' на русский язык обычно
+    требует ____ .
+  options:
+  - answer: перестройки словосочетания с использованием падежей и предлогов (система обработки данных)
+  - answer: сохранения порядка слов без изменений
+  - answer: перевода только последнего слова цепочки
+  - answer: транслитерации всей цепочки
+  correct:
+  - 0
+- question: 'Give the correct translation: Работа выполнена при поддержке гранта.'
+  options:
+  - answer: The work was supported by a grant.
+  - answer: The work is done under support of grant.
+  - answer: The work has made with the grant support.
+  - answer: The work were supported with grant.
+  correct:
+  - 0

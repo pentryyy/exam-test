@@ -17,21 +17,21 @@ pub fn handle_answer(
     println!("{}", test.question);
 
     match answer_type {
-        AnswerKind::SingleAnswer => {
+        AnswerKind::Single => {
             let (shuffled, correct_indices) = prepare_shuffled_options(test, rng);
             display_options(&shuffled);
             let mut input = BufReader::new(stdin());
             let mut output = stdout();
             process_single_choice_from(&mut input, &mut output, shuffled, correct_indices)
         }
-        AnswerKind::MultipleAnswer => {
+        AnswerKind::Multiple => {
             let (shuffled, correct_indices) = prepare_shuffled_options(test, rng);
             display_options(&shuffled);
             let mut input = BufReader::new(stdin());
             let mut output = stdout();
             process_multiple_choice_from(&mut input, &mut output, shuffled, correct_indices)
         }
-        AnswerKind::TextAnswer => {
+        AnswerKind::Text => {
             let mut input = BufReader::new(stdin());
             let mut output = stdout();
             process_text_answer_from(&mut input, &mut output, test)
@@ -107,9 +107,9 @@ pub fn process_text_answer_from<R: BufRead, W: Write>(
 
 fn prepare_shuffled_options<R: Rng>(q: &CfgTest, rng: &mut R) -> (Vec<String>, Vec<usize>) {
     let original_correct_indices: Vec<usize> = match &q.correct {
-        AnswerType::SingleAnswer(idx) => vec![*idx],
-        AnswerType::MultipleAnswer(indices) => indices.iter().copied().collect(),
-        AnswerType::TextAnswer(_) => {
+        AnswerType::Single(idx) => vec![*idx],
+        AnswerType::Multiple(indices) => indices.iter().copied().collect(),
+        AnswerType::Text(_) => {
             return (
                 q.options.iter().map(|opt| opt.answer.clone()).collect(),
                 Vec::new(),
@@ -173,7 +173,7 @@ mod tests {
 
     #[test]
     fn prepare_shuffled_options_preserves_elements() {
-        let test = make_test(vec!["A", "B", "C", "D"], AnswerType::SingleAnswer(0));
+        let test = make_test(vec!["A", "B", "C", "D"], AnswerType::Single(0));
         let mut rng = StdRng::seed_from_u64(42);
         let (shuffled, correct) = prepare_shuffled_options(&test, &mut rng);
         let mut sorted_orig = test
@@ -192,7 +192,7 @@ mod tests {
     fn prepare_shuffled_options_multiple_correct() {
         let test = make_test(
             vec!["X", "Y", "Z", "W"],
-            AnswerType::MultipleAnswer(vec![0, 2].into_iter().collect()),
+            AnswerType::Multiple(vec![0, 2].into_iter().collect()),
         );
         let mut rng = StdRng::seed_from_u64(123);
         let (shuffled, correct) = prepare_shuffled_options(&test, &mut rng);
@@ -314,7 +314,7 @@ mod tests {
         let test = CfgTest {
             question: "?".to_string(),
             options: vec![],
-            correct: AnswerType::TextAnswer("правильный".to_string()),
+            correct: AnswerType::Text("правильный".to_string()),
             accept: vec![],
         };
         let mut input = Cursor::new("правильный\n".as_bytes());
@@ -331,7 +331,7 @@ mod tests {
         let test = CfgTest {
             question: "?".to_string(),
             options: vec![],
-            correct: AnswerType::TextAnswer("текст".to_string()),
+            correct: AnswerType::Text("текст".to_string()),
             accept: vec![],
         };
         let mut input = Cursor::new("\nтекст\n".as_bytes());
@@ -350,7 +350,7 @@ mod tests {
         let test = CfgTest {
             question: "?".to_string(),
             options: vec![],
-            correct: AnswerType::TextAnswer("текст".to_string()),
+            correct: AnswerType::Text("текст".to_string()),
             accept: vec![],
         };
         let mut input = Cursor::new("!пропуск\n".as_bytes());
@@ -367,7 +367,7 @@ mod tests {
         let test = CfgTest {
             question: "?".to_string(),
             options: vec![],
-            correct: AnswerType::TextAnswer("текст".to_string()),
+            correct: AnswerType::Text("текст".to_string()),
             accept: vec![],
         };
         let mut input = Cursor::new("!выход\n".as_bytes());

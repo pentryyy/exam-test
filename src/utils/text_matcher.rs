@@ -8,7 +8,7 @@ pub fn match_text(user: &str, test: &CfgTest) -> bool {
     }
 
     let correct_text = match &test.correct {
-        AnswerType::TextAnswer(text) => text.clone(),
+        AnswerType::Text(text) => text.clone(),
         _ => return false,
     };
 
@@ -37,7 +37,7 @@ fn normalize(s: &str) -> String {
 
     for c in lower.chars() {
         let ch = if c == 'ё' { 'е' } else { c };
-        if ch.is_alphabetic() || ch.is_digit(10) {
+        if ch.is_alphabetic() || ch.is_ascii_digit() {
             result.push(ch);
         } else {
             result.push(' ');
@@ -94,14 +94,14 @@ mod tests {
     impl TestCfgTest {
         fn text_answer(correct: &str, accept: Vec<String>) -> Self {
             Self {
-                correct: AnswerType::TextAnswer(correct.to_string()),
+                correct: AnswerType::Text(correct.to_string()),
                 accept,
             }
         }
 
         fn single_answer() -> Self {
             Self {
-                correct: AnswerType::SingleAnswer(0),
+                correct: AnswerType::Single(0),
                 accept: vec![],
             }
         }
@@ -111,7 +111,7 @@ mod tests {
             set.insert(0);
             set.insert(1);
             Self {
-                correct: AnswerType::MultipleAnswer(set),
+                correct: AnswerType::Multiple(set),
                 accept: vec![],
             }
         }
@@ -121,9 +121,9 @@ mod tests {
                 question: String::new(),
                 options: vec![],
                 correct: match &self.correct {
-                    AnswerType::TextAnswer(s) => AnswerType::TextAnswer(s.clone()),
-                    AnswerType::SingleAnswer(idx) => AnswerType::SingleAnswer(*idx),
-                    AnswerType::MultipleAnswer(set) => AnswerType::MultipleAnswer(set.clone()),
+                    AnswerType::Text(s) => AnswerType::Text(s.clone()),
+                    AnswerType::Single(idx) => AnswerType::Single(*idx),
+                    AnswerType::Multiple(set) => AnswerType::Multiple(set.clone()),
                 },
                 accept: self.accept.clone(),
             }

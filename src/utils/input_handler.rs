@@ -40,10 +40,8 @@ pub fn ask_multiple_choice_from<R: BufRead, W: Write>(
             _ => {
                 let line = line.trim();
 
-                if let Ok(num) = line.parse::<usize>() {
-                    if num >= 1 && num <= max {
-                        return Ok((vec![num - 1], false));
-                    }
+                if let Ok(num) = line.parse::<usize>() && num >= 1 && num <= max {
+                    return Ok((vec![num - 1], false));
                 }
 
                 let mut indices = Vec::new();
@@ -102,10 +100,8 @@ pub fn ask_single_choice_from<R: BufRead, W: Write>(
             ConsoleOperation::Skip => return Ok((-1, false)),
             ConsoleOperation::Quit => return Ok((0, true)),
             _ => {
-                if let Ok(num) = line.trim().parse::<usize>() {
-                    if num >= 1 && num <= max {
-                        return Ok((num as i32 - 1, false));
-                    }
+                if let Ok(num) = line.trim().parse::<usize>() && num >= 1 && num <= max {
+                    return Ok((num as i32 - 1, false));
                 }
                 writeln!(output, "Введите число от 1 до {} или !пропуск.", max)?;
                 output.flush()?;

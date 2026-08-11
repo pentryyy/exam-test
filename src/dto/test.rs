@@ -34,9 +34,9 @@ pub struct CliTests {
 impl CfgTest {
     fn log_answer_type(&self) {
         match &self.correct {
-            AnswerType::SingleAnswer(_) => println!("[ВЫБЕРИТЕ ОДИН ОТВЕТ]"),
-            AnswerType::MultipleAnswer(_) => println!("[ВЫБЕРИТЕ НЕСКОЛЬКО ОТВЕТОВ]"),
-            AnswerType::TextAnswer(_) => println!("[ВВЕДИТЕ ТЕКСТОВЫЙ ОТВЕТ]"),
+            AnswerType::Single(_) => println!("[ВЫБЕРИТЕ ОДИН ОТВЕТ]"),
+            AnswerType::Multiple(_) => println!("[ВЫБЕРИТЕ НЕСКОЛЬКО ОТВЕТОВ]"),
+            AnswerType::Text(_) => println!("[ВВЕДИТЕ ТЕКСТОВЫЙ ОТВЕТ]"),
         }
     }
 
@@ -47,13 +47,13 @@ impl CfgTest {
 
     pub fn correct_answer_string(&self) -> String {
         match &self.correct {
-            AnswerType::SingleAnswer(idx) => self.options[*idx].answer.clone(),
-            AnswerType::MultipleAnswer(indices) => indices
+            AnswerType::Single(idx) => self.options[*idx].answer.clone(),
+            AnswerType::Multiple(indices) => indices
                 .iter()
                 .map(|&i| self.options[i].answer.clone())
                 .collect::<Vec<String>>()
                 .join(", "),
-            AnswerType::TextAnswer(text) => text.clone(),
+            AnswerType::Text(text) => text.clone(),
         }
     }
 }

@@ -3,25 +3,25 @@ use std::collections::HashSet;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum AnswerKind {
-    SingleAnswer,
-    MultipleAnswer,
-    TextAnswer,
+    Single,
+    Multiple,
+    Text,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum AnswerType {
-    SingleAnswer(usize),
-    MultipleAnswer(HashSet<usize>),
-    TextAnswer(String),
+    Single(usize),
+    Multiple(HashSet<usize>),
+    Text(String),
 }
 
 impl AnswerType {
     pub fn kind(&self) -> AnswerKind {
         match self {
-            AnswerType::SingleAnswer(_) => AnswerKind::SingleAnswer,
-            AnswerType::MultipleAnswer(_) => AnswerKind::MultipleAnswer,
-            AnswerType::TextAnswer(_) => AnswerKind::TextAnswer,
+            AnswerType::Single(_) => AnswerKind::Single,
+            AnswerType::Multiple(_) => AnswerKind::Multiple,
+            AnswerType::Text(_) => AnswerKind::Text,
         }
     }
 }

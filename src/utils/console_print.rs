@@ -212,7 +212,7 @@ mod tests {
         let cfg_test = CfgTest {
             question: question.to_string(),
             options: vec![],
-            correct: AnswerType::TextAnswer("Правильный".to_string()),
+            correct: AnswerType::Text("Правильный".to_string()),
             accept: vec![],
         };
         AnswerResult {

@@ -160,3 +160,145 @@ impl<'a> CliApp<'a> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::dto::test::CfgTest;
+    use crate::types::answer_type::AnswerType;
+    use rand::SeedableRng;
+    use rand::rngs::StdRng;
+
+    fn select_indices(total: usize, count: usize, rng: &mut impl rand::Rng) -> Vec<usize> {
+        let mut indices: Vec<usize> = (0..total).collect();
+        indices.shuffle(rng);
+        indices.truncate(count.min(total));
+        indices
+    }
+
+    fn build_answer_result(
+        question: &CfgTest,
+        user_answer: String,
+        correct: bool,
+        skipped: bool,
+    ) -> (AnswerResult, bool) {
+        if skipped {
+            (
+                AnswerResult {
+                    question: question.clone(),
+                    user_answer: "(пропущено)".to_string(),
+                    correct: false,
+                },
+                true,
+            )
+        } else {
+            let display = if user_answer.trim().is_empty() {
+                "(нет ответа)"
+            } else {
+                &user_answer
+            };
+            (
+                AnswerResult {
+                    question: question.clone(),
+                    user_answer: display.to_string(),
+                    correct,
+                },
+                false,
+            )
+        }
+    }
+
+    fn make_question(text: &str) -> CfgTest {
+        CfgTest {
+            question: text.to_string(),
+            options: vec![],
+            correct: AnswerType::Text("правильный".to_string()),
+            accept: vec![],
+        }
+    }
+
+    #[test]
+    fn select_indices_returns_correct_count() {
+        let mut rng = StdRng::seed_from_u64(42);
+        let indices = select_indices(10, 3, &mut rng);
+        assert_eq!(indices.len(), 3);
+        for &i in &indices {
+            assert!(i < 10);
+        }
+    }
+
+    #[test]
+    fn select_indices_truncates_when_count_greater_than_total() {
+        let mut rng = StdRng::seed_from_u64(42);
+        let indices = select_indices(5, 10, &mut rng);
+        assert_eq!(indices.len(), 5);
+    }
+
+    #[test]
+    fn select_indices_no_duplicates() {
+        let mut rng = StdRng::seed_from_u64(42);
+        let indices = select_indices(10, 5, &mut rng);
+        let mut sorted = indices.clone();
+        sorted.sort();
+        sorted.dedup();
+        assert_eq!(sorted.len(), indices.len());
+    }
+
+    #[test]
+    fn build_answer_result_skipped() {
+        let question = make_question("Вопрос?");
+        let (result, skipped) = build_answer_result(&question, String::new(), false, true);
+        assert!(skipped);
+        assert_eq!(result.user_answer, "(пропущено)");
+        assert!(!result.correct);
+        assert_eq!(result.question.question, "Вопрос?");
+    }
+
+    #[test]
+    fn build_answer_result_correct() {
+        let question = make_question("Вопрос?");
+        let (result, skipped) =
+            build_answer_result(&question, "мой ответ".to_string(), true, false);
+        assert!(!skipped);
+        assert_eq!(result.user_answer, "мой ответ");
+        assert!(result.correct);
+    }
+
+    #[test]
+    fn build_answer_result_empty_answer() {
+        let question = make_question("Вопрос?");
+        let (result, skipped) = build_answer_result(&question, "   ".to_string(), false, false);
+        assert!(!skipped);
+        assert_eq!(result.user_answer, "(нет ответа)");
+        assert!(!result.correct);
+    }
+
+    #[test]
+    fn run_interactive_logic_without_io() {
+        let cfg = Config {
+            grades: vec![],
+            test_path: "".to_string(),
+            test_count: 2,
+            result_delay: Duration::from_millis(1),
+        };
+        let _ = CliApp::new(&cfg);
+
+        let questions = vec![
+            make_question("Q1"),
+            make_question("Q2"),
+            make_question("Q3"),
+        ];
+        let cli_tests = CliTests {
+            questions: questions.clone(),
+            count: 2,
+        };
+
+        let mut rng = rand::thread_rng();
+        let indices = select_indices(cli_tests.questions.len(), cli_tests.count, &mut rng);
+        assert_eq!(indices.len(), 2);
+
+        for idx in &indices {
+            assert!(*idx < cli_tests.questions.len());
+        }
+    }
+}

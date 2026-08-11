@@ -17,3 +17,18 @@ pub fn clear_screen() -> anyhow::Result<()> {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn flush_screen_works() {
+        assert!(flush_screen().is_ok());
+    }
+
+    #[test]
+    fn clear_screen_works() {
+        assert!(clear_screen().is_ok());
+    }
+}

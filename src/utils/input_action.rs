@@ -235,7 +235,7 @@ mod tests {
     #[test]
     fn process_multiple_choice_from_valid() {
         let shuffled = vec!["A".to_string(), "B".to_string(), "C".to_string()];
-        let correct = vec![0, 2]; // "A" и "C"
+        let correct = vec![0, 2];
         let mut input = Cursor::new("1, 3\n".as_bytes());
         let mut output = Vec::new();
         let (answer, ok, skipped) = process_multiple_choice_from(&mut input, &mut output, shuffled, correct).unwrap();
